@@ -43,26 +43,21 @@ const Payment = () => {
     orderId,
   } = useSelector((state) => state.order);
 
-  const [stripePromise, setStripePromise] = useState(null);
-  const [shipping, setShipping] = useState(emptyShipping);
+  // The app has already finished the session check before this route renders,
+  // so the first checkout paint can include the signed-in customer's name.
+  const [shipping, setShipping] = useState(() => ({
+    ...emptyShipping,
+    full_name: authUser?.name || "",
+  }));
   const [errors, setErrors] = useState({});
   const [promotions, setPromotions] = useState([]);
   const [promoCode, setPromoCode] = useState("");
   const [activePromotion, setActivePromotion] = useState(null);
 
-  useEffect(() => {
+  const stripePromise = useMemo(() => {
     const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-    if (key) setStripePromise(loadStripe(key));
+    return key ? loadStripe(key) : null;
   }, []);
-
-  useEffect(() => {
-    if (authUser?.name || authUser?.email) {
-      setShipping((prev) => ({
-        ...prev,
-        full_name: prev.full_name || authUser.name || "",
-      }));
-    }
-  }, [authUser]);
 
   useEffect(() => {
     axiosInstance.get("/promotion/active")

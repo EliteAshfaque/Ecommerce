@@ -109,7 +109,7 @@ const ProductCard = ({ product, layout = "slider" }) => {
           <button
             type="button"
             onClick={handleAdd}
-            className="absolute bottom-3 left-3 right-3 flex translate-y-16 items-center justify-center gap-2 rounded-xl bg-[#201b4d]/90 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-xl backdrop-blur-md transition duration-300 group-hover:translate-y-0"
+            className="absolute bottom-3 left-3 right-3 flex items-center justify-center gap-2 rounded-xl bg-[#201b4d]/90 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-xl backdrop-blur-md transition duration-300 sm:translate-y-16 sm:group-hover:translate-y-0"
           >
             <ShoppingBag className="h-3.5 w-3.5" />
             {inStock ? "Quick add" : "Sold out"}

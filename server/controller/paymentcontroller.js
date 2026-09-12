@@ -98,7 +98,7 @@ export const  stripeWebhook = async (req, res) => {
       // Only the first successful webhook can change state and decrement stock.
       // Stripe may retry a delivered webhook, so this makes fulfilment idempotent.
       const paymentTableUpdateResult = await database.query(
-        `UPDATE payments SET payment_status = $1 WHERE payment_intent_id = $2 AND payment_status <> $1 RETURNING *`,
+        `UPDATE payments SET payment_status = $1 WHERE payment_intent_id = $2 AND payment_status = 'Pending' RETURNING *`,
         [updatedPaymentStatus, paymentIntentId]
       );
 
@@ -116,32 +116,35 @@ export const  stripeWebhook = async (req, res) => {
         [orderId]
       );
 
-      // 3. REDUCE STOCK FOR EACH PRODUCT
-      const { rows: orderedItems } = await database.query(
-        `SELECT product_id, quantity FROM order_items WHERE order_id = $1`,
-        [orderId]
-      );
-
-      for (const item of orderedItems) {
-        // Fixed: Added 'await' and completed the SQL query
-        await database.query(
-          `UPDATE products SET stock = stock - $1 WHERE id = $2`,
-          [item.quantity, item.product_id]
-        );
-      }
-
+      // Stock was reserved before the Payment Intent was made; a successful
+      // webhook confirms the reservation rather than subtracting it twice.
       emitOrderChange(updatedOrders[0], "paid");
-      emitCatalogueChange("stock-updated");
 
       console.log(`✅ Order #${orderId} fulfilled successfully.`);
     } 
     else if (event.type === "payment_intent.payment_failed") {
       const paymentIntentId = event.data.object.id;
       
-      await database.query(
-        `UPDATE payments SET payment_status = 'Failed' WHERE payment_intent_id = $1`,
+      const failedPayment = await database.query(
+        `UPDATE payments SET payment_status = 'Failed' WHERE payment_intent_id = $1 AND payment_status = 'Pending' RETURNING order_id`,
         [paymentIntentId]
       );
+      if (failedPayment.rows[0]) {
+        const orderId = failedPayment.rows[0].order_id;
+        const { rows: orderedItems } = await database.query(
+          "SELECT product_id, quantity FROM order_items WHERE order_id = $1",
+          [orderId]
+        );
+        await Promise.all(orderedItems.map((item) =>
+          database.query("UPDATE products SET stock = stock + $1 WHERE id = $2", [item.quantity, item.product_id])
+        ));
+        const { rows: orders } = await database.query(
+          "UPDATE orders SET order_status = 'Cancelled' WHERE id = $1 RETURNING *",
+          [orderId]
+        );
+        emitCatalogueChange("stock-released");
+        if (orders[0]) emitOrderChange(orders[0], "payment-failed");
+      }
       
       console.log(`❌ Payment failed for Stripe ID: ${paymentIntentId}`);
     }

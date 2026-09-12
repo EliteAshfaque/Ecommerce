@@ -4,6 +4,15 @@ import database from "../database/db.js";
 import { generatePaymentIntent } from "./paymentcontroller.js";
 import { emitCatalogueChange, emitOrderChange } from "../realtime/socket.js";
 
+// A reservation is returned when payment setup fails, preventing stranded stock.
+const restoreReservedStock = async (items) => {
+  await Promise.all(
+    items.map((item) =>
+      database.query("UPDATE products SET stock = stock + $1 WHERE id = $2", [item.quantity, item.productId])
+    )
+  );
+};
+
 export const placeNewOrder = catchAsyncErrors(async (req, res, next) => {
   const {
     full_name,
@@ -121,44 +130,74 @@ export const placeNewOrder = catchAsyncErrors(async (req, res, next) => {
   const shipping_price = delivery_type === "Express" ? 25 : discounted_subtotal >= 250 ? 0 : 15;
   total_price = Number((discounted_subtotal + tax_price + shipping_price).toFixed(2));
 
-  // 5. INSERT the main order record
-  const orderResult = await database.query(
-    `INSERT INTO orders (buyer_id, total_price, tax_price, shipping_price, discount_price, promotion_code)
-     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-    [req.user.id, total_price, tax_price, shipping_price, discount_price, promotion_code]
-  );
+  // 5. Atomically reserve each unique product before card payment starts.
+  // The conditional update is the final stock check when simultaneous buyers checkout.
+  const reservedItems = [];
+  const requestedByProduct = new Map();
+  items.forEach((item) => {
+    requestedByProduct.set(
+      item.product.id,
+      (requestedByProduct.get(item.product.id) || 0) + Number(item.quantity)
+    );
+  });
 
-  const orderId = orderResult.rows[0].id;
-
-  // 6. Update the order_id in the values array (it was 'null' as a placeholder)
-  for (let i = 0; i < values.length; i += 6) {
-    values[i] = orderId;
+  try {
+    for (const [productId, quantity] of requestedByProduct) {
+      const reservation = await database.query(
+        "UPDATE products SET stock = stock - $1 WHERE id = $2 AND stock >= $1 RETURNING id",
+        [quantity, productId]
+      );
+      if (!reservation.rows[0]) {
+        await restoreReservedStock(reservedItems);
+        return next(new ErrorHandler("An item just sold out. Refresh your bag and try again.", 409));
+      }
+      reservedItems.push({ productId, quantity });
+    }
+  } catch (error) {
+    await restoreReservedStock(reservedItems);
+    throw error;
   }
 
-  // 7. BULK INSERT all order items
-  await database.query(
-    `INSERT INTO order_items (order_id, product_id, quantity, price, image, title) 
-     VALUES ${placeholders.join(", ")} RETURNING *`,
-    values
-  );
+  let orderResult;
+  let orderId;
+  try {
+    // 6. Persist the order, lines, and delivery selection. Release stock on any database failure.
+    orderResult = await database.query(
+      `INSERT INTO orders (buyer_id, total_price, tax_price, shipping_price, discount_price, promotion_code)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [req.user.id, total_price, tax_price, shipping_price, discount_price, promotion_code]
+    );
+    orderId = orderResult.rows[0].id;
 
-  // 8. INSERT the shipping information
-  await database.query(
-    `INSERT INTO shipping_info (order_id, full_name, state, city, country, emirate, delivery_type, address, pincode, phone)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-    [orderId, full_name, state, city, country, emirate, delivery_type, address, pincode, phone]
-  );
+    for (let i = 0; i < values.length; i += 6) values[i] = orderId;
+    await database.query(
+      `INSERT INTO order_items (order_id, product_id, quantity, price, image, title)
+       VALUES ${placeholders.join(", ")} RETURNING *`,
+      values
+    );
+    await database.query(
+      `INSERT INTO shipping_info (order_id, full_name, state, city, country, emirate, delivery_type, address, pincode, phone)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+      [orderId, full_name, state, city, country, emirate, delivery_type, address, pincode, phone]
+    );
+  } catch (error) {
+    if (orderId) await database.query("DELETE FROM orders WHERE id = $1", [orderId]);
+    await restoreReservedStock(reservedItems);
+    throw error;
+  }
 
-  // 9. Generate the Stripe Payment Intent
+  // 7. Generate the Stripe Payment Intent only after the reservation is stored.
   const paymentResponse = await generatePaymentIntent(orderId, total_price);
 
   if (!paymentResponse.success) {
-    // Remove the unpaid draft; its related records cascade with the order.
+    // Remove the unpaid draft and return its held inventory.
     await database.query("DELETE FROM orders WHERE id = $1", [orderId]);
+    await restoreReservedStock(reservedItems);
+    emitCatalogueChange("stock-released");
     return next(new ErrorHandler("Payment failed. Try again.", 500));
   }
 
-  // 10. Send Final Response
+  // 8. Send the verified amount and payment secret to the checkout stepper.
   res.status(200).json({
     success: true,
     message: "Order placed successfully. Please proceed to payment.",
@@ -168,6 +207,7 @@ export const placeNewOrder = catchAsyncErrors(async (req, res, next) => {
     promotion_code,
     orderId,
   });
+  emitCatalogueChange("stock-reserved");
   emitOrderChange(orderResult.rows[0], "created");
 });
 export const fetchSingleOrder = catchAsyncErrors(async (req, res, next) => {
@@ -378,19 +418,35 @@ export const fetchAllOrders = catchAsyncErrors(async (req, res, next) => {
   });
   export const deleteOrder = catchAsyncErrors(async (req, res, next) => {
     const { orderId } = req.params;
-  
-    // 1. Delete the order from the database
-    // Thanks to ON DELETE CASCADE, related rows in order_items, shipping_info, and payments will be deleted automatically
+
+    // Paid orders are financial records. They must be cancelled/refunded, not erased.
+    const payment = await database.query(
+      `SELECT p.payment_status FROM orders o
+       LEFT JOIN payments p ON p.order_id = o.id
+       WHERE o.id = $1`,
+      [orderId]
+    );
+    if (!payment.rows[0]) return next(new ErrorHandler("Invalid order ID.", 404));
+    if (payment.rows[0].payment_status === "Paid") {
+      return next(new ErrorHandler("Paid orders cannot be deleted. Cancel and refund them through the payment provider.", 409));
+    }
+
+    // A pending checkout still holds stock; release it before deleting the draft.
+    if (payment.rows[0].payment_status !== "Failed") {
+      const { rows: items } = await database.query(
+        "SELECT product_id, quantity FROM order_items WHERE order_id = $1",
+        [orderId]
+      );
+      await restoreReservedStock(items.map((item) => ({ productId: item.product_id, quantity: item.quantity })));
+      emitCatalogueChange("stock-released");
+    }
+
+    // Related line items, shipping, and payment data cascade with the order.
     const results = await database.query(
       `DELETE FROM orders WHERE id = $1 RETURNING *`,
       [orderId]
     );
-  
-    if (results.rows.length === 0) {
-      return next(new ErrorHandler("Invalid order ID.", 404));
-    }
-  
-    // 2. Send the success response (Completed the cut-off part)
+
     res.status(200).json({
       success: true,
       message: "Order deleted successfully.",
