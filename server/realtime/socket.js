@@ -7,6 +7,9 @@ let io;
 const allowedOrigins = () =>
   [process.env.FRONTEND_URL, process.env.DASHBOARD_URL].filter(Boolean);
 
+const isAllowedSocketOrigin = (origin) =>
+  allowedOrigins().includes(origin) || (process.env.NODE_ENV !== "production" && /^http:\/\/(localhost|127\.0\.0\.1):517[3-9]$/.test(origin || ""));
+
 const readCookie = (cookieHeader, name) => {
   const cookie = String(cookieHeader || "")
     .split(";")
@@ -20,7 +23,7 @@ export const initializeSocketServer = (httpServer) => {
     cors: {
       origin(origin, callback) {
         // Requests without an Origin are allowed for local health tooling.
-        if (!origin || allowedOrigins().includes(origin)) return callback(null, true);
+        if (!origin || isAllowedSocketOrigin(origin)) return callback(null, true);
         return callback(new Error("Socket origin is not allowed"));
       },
       credentials: true,
@@ -81,4 +84,10 @@ export const emitOrderChange = (order, action, financialState = {}) => {
 
 export const emitAdminChange = (resource, action) => {
   io?.to("admins").emit("admin:changed", { resource, action, at: Date.now() });
+};
+
+// CMS changes are public storefront content, so active shoppers refresh without reloading.
+export const emitStorefrontChange = (action) => {
+  io?.emit("storefront:changed", { action, at: Date.now() });
+  io?.to("admins").emit("admin:changed", { resource: "storefront", action, at: Date.now() });
 };

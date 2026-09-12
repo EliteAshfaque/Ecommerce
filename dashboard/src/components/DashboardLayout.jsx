@@ -1,91 +1,23 @@
 import { NavLink, Outlet } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Users,
-  Package,
-  ShoppingBag,
-  LogOut,
-  ExternalLink,
-  BadgePercent,
-  Activity,
-  Sparkles,
-} from "lucide-react";
+import { Activity, BadgePercent, Box, ExternalLink, LayoutDashboard, LogOut, Menu, Package, PanelsTopLeft, ShoppingBag, Sparkles, Users, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
 import { logout } from "../store/slices/authSlice";
 
 const STORE_URL = import.meta.env.VITE_STORE_URL || "http://localhost:5173";
+const primaryLinks = [{ to: "/", end: true, label: "Overview", icon: LayoutDashboard }, { to: "/orders", label: "Orders", icon: ShoppingBag }, { to: "/products", label: "Products", icon: Package }, { to: "/users", label: "Customers", icon: Users }];
+const contentLinks = [{ to: "/storefront", label: "Storefront", icon: PanelsTopLeft }, { to: "/sales", label: "Promotions", icon: BadgePercent }];
 
-const links = [
-  { to: "/", end: true, label: "Overview", icon: LayoutDashboard },
-  { to: "/products", label: "Products", icon: Package },
-  { to: "/orders", label: "Orders", icon: ShoppingBag },
-  { to: "/users", label: "Users", icon: Users },
-  { to: "/sales", label: "Sales", icon: BadgePercent },
-];
+const SideLink = ({ link, close }) => { const Icon = link.icon; return <NavLink end={link.end} to={link.to} onClick={close} className={({ isActive }) => `group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${isActive ? "bg-white/12 text-white shadow-[inset_0_1px_0_rgba(255,255,255,.12)]" : "text-white/55 hover:bg-white/[.07] hover:text-white"}`}><Icon className="h-[18px] w-[18px]" />{link.label}</NavLink>; };
 
 const DashboardLayout = () => {
-  const dispatch = useDispatch();
-  const { authUser } = useSelector((state) => state.auth);
-
-  return (
-    <div className="min-h-screen text-ink">
-      <header className="sticky top-0 z-30 border-b border-border/10 bg-fog/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-4 md:px-8">
-          <div className="flex items-center gap-6">
-            <p className="flex items-center gap-2 font-display text-lg font-semibold tracking-[.12em]"><span className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-primary text-white shadow-lg"><Sparkles className="h-3.5 w-3.5" /></span>LUMERA</p>
-            <span className="hidden text-[10px] uppercase tracking-[0.22em] text-stone sm:inline">
-              Commerce OS
-            </span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="hidden items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-emerald-700 lg:inline-flex"><Activity className="h-3.5 w-3.5" /> Live</span>
-            <p className="hidden text-sm text-stone md:block">{authUser?.name}</p>
-            <a
-              href={STORE_URL}
-              className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.16em] text-stone transition hover:text-ink"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              Store
-            </a>
-            <button
-              type="button"
-              onClick={() => dispatch(logout())}
-              className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.16em] text-stone transition hover:text-ink"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-8 px-6 py-8 md:flex-row md:px-8 md:py-10">
-        <aside className="md:w-56 md:shrink-0">
-          <nav className="admin-glass flex gap-1 overflow-x-auto rounded-3xl p-2.5 md:sticky md:top-24 md:flex-col md:gap-1">
-            {links.map(({ to, end, label, icon: Icon }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={end}
-                className={({ isActive }) =>
-                    `flex items-center gap-2.5 whitespace-nowrap px-3.5 py-3 text-sm font-medium transition ${
-                    isActive ? "rounded-2xl bg-ink text-white shadow-lg" : "rounded-2xl text-stone hover:bg-white/70 hover:text-ink"
-                  }`
-                }
-              >
-                <Icon className="h-4 w-4" />
-                {label}
-              </NavLink>
-            ))}
-          </nav>
-        </aside>
-
-        <main className="min-w-0 flex-1">
-          <Outlet />
-        </main>
-      </div>
-    </div>
-  );
+  const dispatch = useDispatch(); const { authUser } = useSelector((state) => state.auth); const [mobileOpen, setMobileOpen] = useState(false);
+  const Sidebar = ({ mobile = false }) => <aside className={mobile ? "flex h-full w-72 flex-col bg-[#181333] p-4 text-white" : "fixed inset-y-0 left-0 z-40 hidden w-72 flex-col bg-[#181333] p-4 text-white shadow-[12px_0_44px_rgba(22,16,60,.16)] lg:flex"}>
+    <div className="flex items-center justify-between px-3 py-3"><div className="flex items-center gap-2.5 font-display text-lg font-semibold tracking-[.14em]"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#8e7aff,#5b45ed)] shadow-lg"><Sparkles className="h-4 w-4" /></span>LUMERA</div>{mobile && <button onClick={() => setMobileOpen(false)} className="rounded-lg p-2 text-white/70"><X className="h-5 w-5" /></button>}</div>
+    <div className="mx-3 mt-7 rounded-2xl border border-white/10 bg-white/[.055] p-3"><p className="text-[9px] font-bold uppercase tracking-[.2em] text-violet-200">Commerce OS</p><p className="mt-1.5 text-xs leading-relaxed text-white/55">Operate your storefront, orders and customer experience in one place.</p></div>
+    <nav className="mt-7 space-y-6 overflow-y-auto px-1"><div><p className="px-3 text-[9px] font-bold uppercase tracking-[.2em] text-white/30">Operations</p><div className="mt-2 space-y-1">{primaryLinks.map((link) => <SideLink key={link.to} link={link} close={() => setMobileOpen(false)} />)}</div></div><div><p className="px-3 text-[9px] font-bold uppercase tracking-[.2em] text-white/30">Growth</p><div className="mt-2 space-y-1">{contentLinks.map((link) => <SideLink key={link.to} link={link} close={() => setMobileOpen(false)} />)}</div></div></nav>
+    <div className="mt-auto border-t border-white/10 pt-4"><a href={STORE_URL} className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-white/55 transition hover:bg-white/[.07] hover:text-white"><ExternalLink className="h-[18px] w-[18px]" />Open storefront</a><div className="mt-2 flex items-center gap-3 rounded-2xl bg-white/[.06] p-3"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-300/20 text-sm font-bold text-violet-100">{String(authUser?.name || "A").charAt(0).toUpperCase()}</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{authUser?.name || "Administrator"}</p><p className="text-[10px] uppercase tracking-[.12em] text-white/45">Admin account</p></div><button onClick={() => dispatch(logout())} className="rounded-lg p-2 text-white/55 hover:bg-white/10 hover:text-white" aria-label="Logout"><LogOut className="h-4 w-4" /></button></div></div>
+  </aside>;
+  return <div className="min-h-screen bg-fog text-ink"><Sidebar /><div className="min-h-screen lg:pl-72"><header className="sticky top-0 z-30 border-b border-border/10 bg-fog/85 px-5 py-4 backdrop-blur-xl md:px-8"><div className="mx-auto flex max-w-[1480px] items-center justify-between"><div className="flex items-center gap-3"><button onClick={() => setMobileOpen(true)} className="rounded-xl bg-white p-2 text-ink shadow-sm lg:hidden"><Menu className="h-5 w-5" /></button><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-primary">LUMERA admin</p><p className="mt-0.5 text-xs text-stone">Commerce operations workspace</p></div></div><div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-emerald-700"><Activity className="h-3.5 w-3.5" /> Live</div></div></header><main className="mx-auto w-full max-w-[1480px] px-5 py-7 md:px-8 md:py-9"><Outlet /></main></div>{mobileOpen && <div className="fixed inset-0 z-50 bg-[#0f0b28]/45 backdrop-blur-sm lg:hidden"><div className="h-full w-72 shadow-2xl"><Sidebar mobile /></div></div>}</div>;
 };
-
 export default DashboardLayout;

@@ -16,10 +16,20 @@ import addressRoutes from "./router/addressRoutes.js";
 import storefrontAdminRoutes from "./router/storefrontAdminRoutes.js";
 const app = express();
 
+// Vite may choose the next local port when 5173/5174 are busy. This is
+// development-only; production remains limited to its configured origins.
+const isAllowedBrowserOrigin = (origin) => {
+  const configured = [process.env.FRONTEND_URL, process.env.DASHBOARD_URL];
+  if (configured.includes(origin)) return true;
+  return process.env.NODE_ENV !== "production" && /^http:\/\/(localhost|127\.0\.0\.1):517[3-9]$/.test(origin || "");
+};
 
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL, process.env.DASHBOARD_URL],
+    origin(origin, callback) {
+      if (!origin || isAllowedBrowserOrigin(origin)) return callback(null, true);
+      return callback(new Error("Browser origin is not allowed"));
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })

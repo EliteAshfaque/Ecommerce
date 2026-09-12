@@ -33,7 +33,9 @@ const loadGoogleMaps = () => new Promise((resolve, reject) => {
 
   const script = document.createElement("script");
   script.dataset.lumeraGoogleMaps = "true";
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&v=weekly`;
+  // Google recommends asynchronous loading; the script onload handler below
+  // resolves the Maps service before reverse-geocoding is attempted.
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&v=weekly&loading=async`;
   script.async = true;
   script.onload = () => resolve(window.google?.maps);
   script.onerror = () => reject(new Error("Maps could not be loaded."));

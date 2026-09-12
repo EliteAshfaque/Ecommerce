@@ -4,6 +4,7 @@ import { realtimeSocket } from "../lib/realtime";
 import { fetchProductDetails, fetchProducts } from "../store/slices/productSlice";
 import { fetchMyOrders } from "../store/slices/orderSlice";
 import { fetchWishlist, clearWishlist } from "../store/slices/wishlistSlice";
+import { fetchStorefront } from "../store/slices/storefrontSlice";
 
 // Keeps visible storefront data current without polling the API.
 const LiveUpdates = () => {
@@ -36,6 +37,7 @@ const LiveUpdates = () => {
 
     realtimeSocket.on("catalogue:changed", refreshCatalogue);
     realtimeSocket.on("order:changed", refreshOrders);
+    realtimeSocket.on("storefront:changed", () => dispatch(fetchStorefront()));
     if (userId) dispatch(fetchWishlist());
     else dispatch(clearWishlist());
     realtimeSocket.connect();
@@ -43,6 +45,7 @@ const LiveUpdates = () => {
     return () => {
       realtimeSocket.off("catalogue:changed", refreshCatalogue);
       realtimeSocket.off("order:changed", refreshOrders);
+      realtimeSocket.off("storefront:changed");
       realtimeSocket.disconnect();
     };
   }, [dispatch, userId]);

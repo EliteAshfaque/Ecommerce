@@ -10,6 +10,7 @@ import Orders from "./pages/Orders";
 import Users from "./pages/Users";
 import Login from "./pages/Login";
 import Sales from "./pages/Sales";
+import Storefront from "./pages/Storefront";
 import LiveUpdates from "./components/LiveUpdates";
 
 function AuthLoader() {
@@ -50,6 +51,7 @@ function App() {
             <Route path="orders" element={<Orders />} />
             <Route path="users" element={<Users />} />
             <Route path="sales" element={<Sales />} />
+            <Route path="storefront" element={<Storefront />} />
           </Route>
         </Route>
 
