@@ -8,6 +8,7 @@ import {
   logout,
 } from "../../store/slices/authSlice";
 import { toggleAuthPopup } from "../../store/slices/popupSlice";
+import AddressBook from "../Account/AddressBook";
 
 const ProfilePanel = () => {
   const dispatch = useDispatch();
@@ -205,6 +206,8 @@ const ProfilePanel = () => {
               {isUpdatingProfile ? "Updating..." : "Save Changes"}
             </button>
           </form>
+
+          <AddressBook />
 
           {/* UPDATE PASSWORD */}
           <form

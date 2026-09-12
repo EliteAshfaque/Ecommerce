@@ -9,6 +9,11 @@ export async function createPaymentsTable() {
         payment_type VARCHAR(20) NOT NULL CHECK (payment_type IN ('Online')),
         payment_status VARCHAR(20) NOT NULL CHECK (payment_status IN ('Paid', 'Pending', 'Failed')),
         payment_intent_id VARCHAR(255) UNIQUE,
+        refund_id VARCHAR(255) UNIQUE,
+        refund_status VARCHAR(20) NOT NULL DEFAULT 'None' CHECK (refund_status IN ('None', 'Pending', 'Succeeded', 'Failed')),
+        refund_amount DECIMAL(10,2) NOT NULL DEFAULT 0 CHECK (refund_amount >= 0),
+        refund_reason VARCHAR(40),
+        refunded_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
       );

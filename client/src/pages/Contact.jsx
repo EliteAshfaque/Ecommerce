@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
+import axiosInstance from "../lib/axios";
 
 const Contact = () => {
   const [form, setForm] = useState({
@@ -13,14 +14,19 @@ const Contact = () => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) {
       toast.error("Please fill in name, email, and message.");
       return;
     }
-    toast.success("Message sent. We’ll reply soon.");
-    setForm({ name: "", email: "", subject: "", message: "" });
+    try {
+      const { data } = await axiosInstance.post("/storefront/contact", form);
+      toast.success(data.message);
+      setForm({ name: "", email: "", subject: "", message: "" });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Could not send your message.");
+    }
   };
 
   return (

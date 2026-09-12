@@ -66,6 +66,14 @@ const OrderCard = ({ order }) => {
               Payment {order.payment_status}
             </p>
           )}
+          {order.refund_status && order.refund_status !== "None" && (
+            <p className={`mt-2 text-[10px] uppercase tracking-[0.16em] ${
+              order.refund_status === "Succeeded" ? "text-primary" : order.refund_status === "Failed" ? "text-red-600" : "text-amber-700"
+            }`}>
+              Refund {order.refund_status.toLowerCase()}
+              {Number(order.refund_amount || 0) ? ` · ${formatMoney(order.refund_amount)}` : ""}
+            </p>
+          )}
 
           {/* Thumbnail strip */}
           {items.length > 0 && (
@@ -207,6 +215,12 @@ const OrderCard = ({ order }) => {
                     {formatMoney(order.total_price)}
                   </span>
                 </div>
+                {order.refund_status && order.refund_status !== "None" && (
+                  <div className="flex justify-between pt-1 text-primary">
+                    <span>Refund {order.refund_status.toLowerCase()}</span>
+                    <span className="tabular-nums">{formatMoney(order.refund_amount)}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

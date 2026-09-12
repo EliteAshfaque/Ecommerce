@@ -1,11 +1,11 @@
-import { categories } from "../../data/products";
+import { categories as fallbackCategories } from "../../data/products";
 
 const priceRanges = [
   { label: "All", value: "0-10000" },
-  { label: "Under $100", value: "0-100" },
-  { label: "$100 – $300", value: "100-300" },
-  { label: "$300 – $600", value: "300-600" },
-  { label: "$600+", value: "600-10000" },
+  { label: "Under AED 100", value: "0-100" },
+  { label: "AED 100 – 300", value: "100-300" },
+  { label: "AED 300 – 600", value: "300-600" },
+  { label: "AED 600+", value: "600-10000" },
 ];
 
 const ratingOptions = [
@@ -24,7 +24,7 @@ const Chip = ({ active, onClick, children }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`rounded-none border px-3 py-1.5 text-[11px] uppercase tracking-[0.14em] transition ${
+    className={`rounded-xl border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] transition ${
       active
         ? "border-ink bg-ink text-fog dark:border-fog dark:bg-fog dark:text-ink"
         : "border-border/15 text-stone hover:border-ink/40 hover:text-ink"
@@ -34,13 +34,14 @@ const Chip = ({ active, onClick, children }) => (
   </button>
 );
 
-const ProductFilters = ({ filters, onChange, onClear, mobile = false }) => {
+const ProductFilters = ({ filters, onChange, onClear, categories = [], mobile = false }) => {
+  const categoryItems = categories.length ? categories : fallbackCategories;
   const set = (key, value) => onChange({ ...filters, [key]: value, page: 1 });
 
   return (
     <aside
       className={`${
-        mobile ? "w-full" : "sticky top-24 hidden w-[220px] shrink-0 lg:block"
+        mobile ? "w-full" : "sticky top-24 hidden w-[238px] shrink-0 lg:block"
       }`}
     >
       <div className="mb-8 flex items-baseline justify-between">
@@ -56,7 +57,7 @@ const ProductFilters = ({ filters, onChange, onClear, mobile = false }) => {
         </button>
       </div>
 
-      <div className="space-y-8">
+      <div className="glass-card space-y-8 rounded-3xl p-5">
         <div>
           <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-stone">
             Category
@@ -73,7 +74,7 @@ const ProductFilters = ({ filters, onChange, onClear, mobile = false }) => {
             >
               Everything
             </button>
-            {categories.map((cat) => (
+            {categoryItems.map((cat) => (
               <button
                 key={cat.id}
                 type="button"

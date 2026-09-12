@@ -3,23 +3,23 @@ import { Truck, Shield, Headphones, CreditCard } from "lucide-react";
 const features = [
   {
     icon: Truck,
-    title: "Free Shipping",
-    description: "Free shipping on orders over $50 worldwide",
+    title: "UAE delivery",
+    description: "Complimentary Standard delivery on orders over AED 250.",
   },
   {
     icon: Shield,
-    title: "Secure Payment",
-    description: "100% secure payment with SSL encryption",
+    title: "Secure payment",
+    description: "Stripe-powered card payments with clear AED totals.",
   },
   {
     icon: Headphones,
-    title: "24/7 Support",
-    description: "Round-the-clock customer support assistance",
+    title: "Order support",
+    description: "Send our Dubai team a note and receive a response in one business day.",
   },
   {
     icon: CreditCard,
-    title: "Easy Returns",
-    description: "30-day hassle-free return policy",
+    title: "Clear fulfilment",
+    description: "Standard or Express delivery choices for every Emirate at checkout.",
   },
 ];
 

@@ -163,8 +163,36 @@ export const dashboardStats = catchAsyncErrors(async (req, res, next) => {
       [currentMonthStart]
     );
     const newUsersThisMonth = parseInt(newUsersThisMonthQuery.rows[0].count) || 0;
-  
-    // 13. FINAL RESPONSE
+
+    // 13. Operational dashboard data: recent fulfilment activity and sales mix are derived from paid orders.
+    const [totalOrdersResult, pendingPaymentsResult, recentOrdersResult, categorySalesResult] = await Promise.all([
+      database.query("SELECT COUNT(*) FROM orders"),
+      database.query("SELECT COUNT(*) FROM payments WHERE payment_status = 'Pending'"),
+      database.query(`SELECT o.id, o.total_price, o.order_status, o.created_at,
+          u.name AS customer_name, p.payment_status, p.refund_status
+        FROM orders o
+        LEFT JOIN users u ON u.id = o.buyer_id
+        LEFT JOIN payments p ON p.order_id = o.id
+        ORDER BY o.created_at DESC LIMIT 6`),
+      database.query(`SELECT p.category, SUM(oi.price * oi.quantity) AS revenue, SUM(oi.quantity)::int AS quantity
+        FROM order_items oi
+        JOIN products p ON p.id = oi.product_id
+        JOIN orders o ON o.id = oi.order_id
+        JOIN payments pay ON pay.order_id = o.id AND pay.payment_status = 'Paid'
+        GROUP BY p.category
+        ORDER BY revenue DESC
+        LIMIT 5`),
+    ]);
+    const totalOrders = parseInt(totalOrdersResult.rows[0].count, 10) || 0;
+    const pendingPayments = parseInt(pendingPaymentsResult.rows[0].count, 10) || 0;
+    const recentOrders = recentOrdersResult.rows;
+    const categorySales = categorySalesResult.rows.map((row) => ({
+      category: row.category,
+      revenue: parseFloat(row.revenue) || 0,
+      quantity: parseInt(row.quantity, 10) || 0,
+    }));
+
+    // 14. FINAL RESPONSE
     res.status(200).json({
       success: true,
       message: "Dashboard Stats Fetched Successfully",
@@ -179,6 +207,10 @@ export const dashboardStats = catchAsyncErrors(async (req, res, next) => {
       lowStockProducts,
       revenueGrowth,
       newUsersThisMonth,
+      totalOrders,
+      pendingPayments,
+      recentOrders,
+      categorySales,
     });
   });
 export const deleteUser = catchAsyncErrors(async (req, res, next) => {

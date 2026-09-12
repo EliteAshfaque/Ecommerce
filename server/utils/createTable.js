@@ -8,6 +8,8 @@ import { createOrdersTable } from "../models/ordersTable.js"; // Missing in imag
 import database from "../database/db.js";
 import { createWishlistItemsTable } from "../models/wishlistItemTable.js";
 import { createPromotionsTable } from "../models/promotionTable.js";
+import { createStorefrontTables } from "../models/storefrontTable.js";
+import { createUserAddressesTable } from "../models/userAddressTable.js";
 
 export const createTables = async () => {
   try {
@@ -31,13 +33,23 @@ export const createTables = async () => {
     await createPaymentsTable();
     await createShippingInfoTable();
     await createWishlistItemsTable();
+    await createUserAddressesTable();
     await createPromotionsTable();
+    await createStorefrontTables();
 
     // Backward-compatible upgrades for databases created before UAE checkout.
     await database.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_price DECIMAL(10,2) NOT NULL DEFAULT 0");
     await database.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS promotion_code VARCHAR(50)");
     await database.query("ALTER TABLE shipping_info ADD COLUMN IF NOT EXISTS emirate VARCHAR(100)");
     await database.query("ALTER TABLE shipping_info ADD COLUMN IF NOT EXISTS delivery_type VARCHAR(20)");
+    // Refund fields preserve the Stripe refund record beside the original payment.
+    await database.query("ALTER TABLE payments ADD COLUMN IF NOT EXISTS refund_id VARCHAR(255) UNIQUE");
+    await database.query("ALTER TABLE payments ADD COLUMN IF NOT EXISTS refund_status VARCHAR(20) NOT NULL DEFAULT 'None'");
+    await database.query("ALTER TABLE payments ADD COLUMN IF NOT EXISTS refund_amount DECIMAL(10,2) NOT NULL DEFAULT 0");
+    await database.query("ALTER TABLE payments ADD COLUMN IF NOT EXISTS refund_reason VARCHAR(40)");
+    await database.query("ALTER TABLE payments ADD COLUMN IF NOT EXISTS refunded_at TIMESTAMP");
+    await database.query("ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_refund_status_check");
+    await database.query("ALTER TABLE payments ADD CONSTRAINT payments_refund_status_check CHECK (refund_status IN ('None', 'Pending', 'Succeeded', 'Failed'))");
 
     console.log("All Tables Created Successfully.");
   } catch (error) {

@@ -1,7 +1,7 @@
 import ErrorHandler from "../middlewares/errorMiddlesware.js";
 import { catchAsyncErrors } from "../middlewares/catchAsynError.js";
 import database from "../database/db.js";
-import { generatePaymentIntent } from "./paymentcontroller.js";
+import { createOrderRefund, generatePaymentIntent } from "./paymentcontroller.js";
 import { emitCatalogueChange, emitOrderChange } from "../realtime/socket.js";
 
 // A reservation is returned when payment setup fails, preventing stranded stock.
@@ -208,7 +208,7 @@ export const placeNewOrder = catchAsyncErrors(async (req, res, next) => {
     orderId,
   });
   emitCatalogueChange("stock-reserved");
-  emitOrderChange(orderResult.rows[0], "created");
+  emitOrderChange(orderResult.rows[0], "created", { paymentStatus: "Pending" });
 });
 export const fetchSingleOrder = catchAsyncErrors(async (req, res, next) => {
     const { orderId } = req.params;
@@ -218,7 +218,7 @@ export const fetchSingleOrder = catchAsyncErrors(async (req, res, next) => {
       `
       SELECT 
         o.*,
-        p.payment_status,
+        p.payment_status, p.refund_status, p.refund_id, p.refund_amount,
         COALESCE(
           json_agg(
             json_build_object(
@@ -246,7 +246,7 @@ export const fetchSingleOrder = catchAsyncErrors(async (req, res, next) => {
       LEFT JOIN shipping_info s ON o.id = s.order_id
       LEFT JOIN payments p ON p.order_id = o.id
       WHERE o.id = $1 AND (o.buyer_id = $2 OR $3 = 'Admin')
-      GROUP BY o.id, s.id, p.payment_status;
+      GROUP BY o.id, s.id, p.id;
       `,
       [orderId, req.user.id, req.user.role]
     );
@@ -266,7 +266,7 @@ export const fetchSingleOrder = catchAsyncErrors(async (req, res, next) => {
 export const fetchMyOrders = catchAsyncErrors(async (req, res, next) => {
   const result = await database.query(
     `
-    SELECT o.*, p.payment_status,
+    SELECT o.*, p.payment_status, p.refund_status, p.refund_id, p.refund_amount,
     COALESCE(
       json_agg(
         json_build_object(
@@ -296,7 +296,7 @@ export const fetchMyOrders = catchAsyncErrors(async (req, res, next) => {
     LEFT JOIN shipping_info s ON o.id = s.order_id
     LEFT JOIN payments p ON p.order_id = o.id
     WHERE o.buyer_id = $1
-    GROUP BY o.id, s.id, p.payment_status
+    GROUP BY o.id, s.id, p.id
     `,
     [req.user.id]
   );
@@ -311,7 +311,7 @@ export const fetchMyOrders = catchAsyncErrors(async (req, res, next) => {
 export const fetchAllOrders = catchAsyncErrors(async (req, res, next) => {
     const result = await database.query(
       `
-      SELECT o.*, p.payment_status,
+      SELECT o.*, p.payment_status, p.refund_status, p.refund_id, p.refund_amount,
       COALESCE(
         json_agg(
           json_build_object(
@@ -340,7 +340,7 @@ export const fetchAllOrders = catchAsyncErrors(async (req, res, next) => {
       LEFT JOIN order_items oi ON o.id = oi.order_id
       LEFT JOIN shipping_info s ON o.id = s.order_id
       LEFT JOIN payments p ON p.order_id = o.id
-      GROUP BY o.id, s.id, p.payment_status
+      GROUP BY o.id, s.id, p.id
       ORDER BY o.created_at DESC
       `
     );
@@ -363,7 +363,7 @@ export const fetchAllOrders = catchAsyncErrors(async (req, res, next) => {
   
     // 1. Check if the order exists
     const results = await database.query(
-      `SELECT o.*, p.payment_status
+      `SELECT o.*, p.payment_status, p.payment_intent_id, p.refund_status, p.refund_id, p.refund_amount
        FROM orders o
        LEFT JOIN payments p ON p.order_id = o.id
        WHERE o.id = $1`,
@@ -375,6 +375,13 @@ export const fetchAllOrders = catchAsyncErrors(async (req, res, next) => {
     }
 
     const currentOrder = results.rows[0];
+    if (status === currentOrder.order_status) {
+      return res.status(200).json({
+        success: true,
+        message: `Order is already ${status}.`,
+        order: currentOrder,
+      });
+    }
     if (currentOrder.payment_status !== "Paid") {
       return next(new ErrorHandler("An order must be paid before its fulfilment status can change.", 409));
     }
@@ -389,7 +396,24 @@ export const fetchAllOrders = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler("This order cannot move to the requested status.", 409));
     }
   
-    // 2. Update the order status (Completed the cut-off query)
+    let refundStatus = currentOrder.refund_status || "None";
+    if (status === "Cancelled") {
+      const refundResult = await createOrderRefund(currentOrder.payment_intent_id, orderId);
+      if (!refundResult.success) {
+        return next(new ErrorHandler(refundResult.message, 502));
+      }
+      refundStatus = refundResult.refundStatus;
+      await database.query(
+        `UPDATE payments
+         SET refund_id = $1, refund_status = $2, refund_amount = $3,
+             refund_reason = 'requested_by_customer',
+             refunded_at = CASE WHEN $2 = 'Succeeded' THEN NOW() ELSE NULL END
+         WHERE order_id = $4`,
+        [refundResult.refund.id, refundStatus, Number(refundResult.refund.amount || 0) / 100, orderId]
+      );
+    }
+
+    // 2. Update fulfilment only after Stripe accepted the refund request.
     const updatedOrder = await database.query(
       `UPDATE orders SET order_status = $1 WHERE id = $2 RETURNING *`,
       [status, orderId]
@@ -411,10 +435,15 @@ export const fetchAllOrders = catchAsyncErrors(async (req, res, next) => {
     // 3. Send the final response
     res.status(200).json({
       success: true,
-      message: "Order status updated successfully.",
-      order: updatedOrder.rows[0],
+      message: status === "Cancelled"
+        ? `Order cancelled. Refund ${refundStatus.toLowerCase()}.`
+        : "Order status updated successfully.",
+      order: { ...updatedOrder.rows[0], payment_status: currentOrder.payment_status, refund_status: refundStatus },
     });
-    emitOrderChange(updatedOrder.rows[0], "status-updated");
+    emitOrderChange(updatedOrder.rows[0], "status-updated", {
+      paymentStatus: currentOrder.payment_status,
+      refundStatus,
+    });
   });
   export const deleteOrder = catchAsyncErrors(async (req, res, next) => {
     const { orderId } = req.params;

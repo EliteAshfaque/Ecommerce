@@ -16,6 +16,7 @@ export const fetchProducts = createAsyncThunk(
       search = "",
       page = 1,
       availability = "",
+      sort = "newest",
     } = {},
     thunkApi
   ) => {
@@ -28,6 +29,7 @@ export const fetchProducts = createAsyncThunk(
       if (search) params.append("search", search);
       if (page) params.append("page", page);
       if (availability) params.append("availability", availability);
+      if (sort && sort !== "newest") params.append("sort", sort);
 
       const response = await axiosInstance.get(`/product?${params.toString()}`);
       return response.data;

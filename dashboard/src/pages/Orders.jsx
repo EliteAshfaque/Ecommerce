@@ -73,23 +73,31 @@ const DashboardOrders = () => {
                       {order.shipping_info.emirate} · {order.shipping_info.delivery_type || "Standard"} delivery
                     </p>
                   )}
-                  {order.payment_status && order.payment_status !== "Paid" && (
-                    <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.14em] text-amber-700">
-                      Payment {order.payment_status}
+                  {order.payment_status && (
+                    <p className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                      order.payment_status === "Paid" ? "bg-emerald-100 text-emerald-700" : order.payment_status === "Failed" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
+                    }`}>
+                      Payment · {order.payment_status}
+                    </p>
+                  )}
+                  {order.refund_status && order.refund_status !== "None" && (
+                    <p className={`mt-1 text-[10px] font-medium uppercase tracking-[0.14em] ${
+                      order.refund_status === "Succeeded" ? "text-primary" : order.refund_status === "Failed" ? "text-red-600" : "text-amber-700"
+                    }`}>
+                      Refund {order.refund_status}{Number(order.refund_amount || 0) ? ` · ${money(order.refund_amount)}` : ""}
                     </p>
                   )}
                 </div>
 
                 <select
                   value={order.order_status || "Processing"}
-                  onChange={(e) =>
-                    dispatch(
-                      updateAdminOrderStatus({
-                        orderId: order.id,
-                        status: e.target.value,
-                      })
-                    )
-                  }
+                  onChange={(e) => {
+                    const status = e.target.value;
+                    if (status === "Cancelled" && order.order_status !== "Cancelled" && !window.confirm(
+                      `Cancel this order and issue a full Stripe refund of ${money(order.total_price)}?`
+                    )) return;
+                    dispatch(updateAdminOrderStatus({ orderId: order.id, status }));
+                  }}
                   className="border border-border/15 bg-transparent px-3 py-2 text-sm outline-none"
                 >
                   {STATUSES.map((s) => (

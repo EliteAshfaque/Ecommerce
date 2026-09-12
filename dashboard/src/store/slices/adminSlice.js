@@ -338,7 +338,7 @@ const adminSlice = createSlice({
         const updated = action.payload;
         state.orders = state.orders.map((o) =>
           o.id === updated.id
-            ? { ...o, order_status: updated.order_status || updated.status }
+            ? { ...o, ...updated, order_status: updated.order_status || updated.status }
             : o
         );
       })

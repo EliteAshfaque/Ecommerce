@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { categories } from "../../data/products";
+import { categories as fallbackCategories } from "../../data/products";
 
-const CategoryGrid = () => {
+const CategoryGrid = ({ categories = [] }) => {
+  const items = categories.length ? categories.map((category) => ({ ...category, image: category.image_url })) : fallbackCategories;
   return (
     <section className="py-20">
       <div className="mb-12 text-center">
@@ -17,7 +18,7 @@ const CategoryGrid = () => {
       </div>
 
       <div className="grid grid-cols-2 gap-5 md:grid-cols-4 md:gap-6">
-        {categories.map((category) => (
+        {items.map((category) => (
           <Link
             key={category.id}
             to={`/products?category=${encodeURIComponent(category.name)}`}

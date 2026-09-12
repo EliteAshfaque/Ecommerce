@@ -3,16 +3,24 @@ import { X, Search, ArrowRight, Package, Sparkles } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toggleSearchBar } from "../../store/slices/popupSlice";
+import axiosInstance from "../../lib/axios";
+import { getProductImage } from "../Products/ProductCard";
 
 const quickSearches = [
   "Electronics",
   "Fashion",
   "Home & Garden",
   "Sports",
+  "Beauty",
+  "Kitchen",
+  "Accessories",
+  "Books",
 ];
 
 const SearchOverlay = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const inputRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -37,10 +45,35 @@ const SearchOverlay = () => {
     };
   }, [isSearchBarOpen, dispatch]);
 
+  // Small, debounced query keeps search useful without redirecting the customer away mid-typing.
+  useEffect(() => {
+    const term = searchQuery.trim();
+    if (term.length < 2) {
+      return undefined;
+    }
+    let active = true;
+    const timer = setTimeout(async () => {
+      setSuggestionsLoading(true);
+      try {
+        const { data } = await axiosInstance.get(`/product?search=${encodeURIComponent(term)}`);
+        if (active) setSuggestions((data.products || []).slice(0, 4));
+      } catch {
+        if (active) setSuggestions([]);
+      } finally {
+        if (active) setSuggestionsLoading(false);
+      }
+    }, 220);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
+
   if (!isSearchBarOpen) return null;
 
   const close = () => {
     setSearchQuery("");
+    setSuggestions([]);
     dispatch(toggleSearchBar());
   };
 
@@ -49,6 +82,11 @@ const SearchOverlay = () => {
     if (!value) return;
     close();
     navigate(`/products?search=${encodeURIComponent(value)}`);
+  };
+
+  const openProduct = (productId) => {
+    close();
+    navigate(`/product/${productId}`);
   };
 
   return (
@@ -63,7 +101,7 @@ const SearchOverlay = () => {
 
       {/* Panel */}
       <div className="relative z-10 flex min-h-full items-start justify-center px-4 pt-[12vh] sm:pt-[18vh]">
-        <div className="animate-slide-in-top w-full max-w-2xl overflow-hidden border border-border/10 bg-fog/95 shadow-2xl backdrop-blur-xl dark:bg-[#12151c]/95">
+        <div className="animate-slide-in-top w-full max-w-2xl overflow-hidden rounded-3xl border border-border/10 bg-fog/95 shadow-2xl backdrop-blur-xl dark:bg-[#12151c]/95">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border/10 px-5 py-4 sm:px-6">
             <div>
@@ -91,9 +129,12 @@ const SearchOverlay = () => {
               <input
                 ref={inputRef}
                 type="text"
-                placeholder="Search for products, categories..."
+                placeholder="Search products, materials or categories"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  if (e.target.value.trim().length < 2) setSuggestions([]);
+                }}
                 onKeyDown={(e) => e.key === "Enter" && runSearch()}
                 className="w-full border border-border/15 bg-mist/60 py-4 pl-12 pr-28 text-base text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
               />
@@ -112,6 +153,14 @@ const SearchOverlay = () => {
               <kbd className="rounded border border-border/20 px-1.5 py-0.5">Esc</kbd> to close
             </p>
           </div>
+
+          {searchQuery.trim().length >= 2 && (
+            <div className="border-t border-border/10 px-5 py-4 sm:px-6">
+              <div className="mb-3 flex items-center justify-between"><p className="text-[10px] font-semibold uppercase tracking-[.18em] text-stone">Matching finds</p>{suggestionsLoading && <span className="text-xs text-stone">Searching…</span>}</div>
+              {suggestions.length ? <div className="space-y-1">{suggestions.map((product) => <button key={product.id} type="button" onClick={() => openProduct(product.id)} className="group flex w-full items-center gap-3 rounded-2xl p-2 text-left transition hover:bg-primary/[.06]"><img src={getProductImage(product)} alt="" className="h-12 w-11 rounded-xl object-cover" /><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold text-foreground">{product.name}</span><span className="mt-0.5 block text-xs text-stone">{product.category}</span></span><span className="text-xs font-semibold text-primary">AED {Number(product.price || 0).toLocaleString("en-AE")}</span></button>)}</div> : !suggestionsLoading && <p className="py-3 text-sm text-stone">No exact match yet — search the complete edit instead.</p>}
+              <button type="button" onClick={() => runSearch()} className="mt-3 text-xs font-semibold text-primary underline decoration-primary/30 underline-offset-4">View all results for “{searchQuery.trim()}”</button>
+            </div>
+          )}
 
           {/* Suggestions */}
           <div className="border-t border-border/10 px-5 py-5 sm:px-6">

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { ArrowUpRight, Heart, ShoppingBag } from "lucide-react";
+import { ArrowUpRight, Heart, ShoppingBag, Star, Truck } from "lucide-react";
 import { addToCart } from "../../store/slices/cartSlice";
 import { toggleWishlist } from "../../store/slices/wishlistSlice";
 import { toggleAuthPopup } from "../../store/slices/popupSlice";
@@ -56,6 +56,8 @@ const ProductCard = ({ product, layout = "slider" }) => {
     currency: "AED",
   });
   const inStock = Number(product.stock) > 0;
+  const rating = Number(product.ratings || 0);
+  const reviewCount = Number(product.review_count || 0);
 
   const handleAdd = (e) => {
     e.preventDefault();
@@ -79,7 +81,7 @@ const ProductCard = ({ product, layout = "slider" }) => {
   return (
     <article
       className={
-        layout === "grid" ? "group w-full" : "group w-[260px] shrink-0 sm:w-[280px]"
+        layout === "grid" ? "group w-full" : "group w-[224px] shrink-0 sm:w-[244px]"
       }
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -127,7 +129,14 @@ const ProductCard = ({ product, layout = "slider" }) => {
             </div>
             <ArrowUpRight className="mt-1 h-4 w-4 shrink-0 text-stone transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" />
           </div>
-          <p className="mt-2 text-sm font-medium tabular-nums text-ink/75">{price}</p>
+          <p className="mt-2 text-base font-bold tabular-nums text-ink">{price}</p>
+          <div className="mt-2 flex items-center gap-1.5 text-xs text-stone">
+            {rating > 0 ? <><Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /><span className="font-semibold text-ink">{rating.toFixed(1)}</span><span>{reviewCount ? `(${reviewCount.toLocaleString()})` : "verified rating"}</span></> : <span>New to LUMERA</span>}
+          </div>
+          <p className={`mt-2 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[.1em] ${inStock ? "text-emerald-700" : "text-rose-600"}`}>
+            <Truck className="h-3.5 w-3.5" />
+            {inStock ? (Number(product.stock) <= 5 ? `Only ${product.stock} left` : "UAE delivery available") : "Currently unavailable"}
+          </p>
       </Link>
     </article>
   );

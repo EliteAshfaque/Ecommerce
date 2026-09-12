@@ -63,8 +63,17 @@ export const emitCatalogueChange = (action, productId = null) => {
   io?.to("admins").emit("admin:changed", { resource: "catalogue", action });
 };
 
-export const emitOrderChange = (order, action) => {
-  const payload = { action, orderId: order.id, status: order.order_status, at: Date.now() };
+// Every order event includes fulfilment plus financial state. Consumers still refetch
+// the authoritative record, but the payload is useful for immediate UI feedback.
+export const emitOrderChange = (order, action, financialState = {}) => {
+  const payload = {
+    action,
+    orderId: order.id,
+    status: order.order_status,
+    paymentStatus: financialState.paymentStatus || order.payment_status || null,
+    refundStatus: financialState.refundStatus || order.refund_status || null,
+    at: Date.now(),
+  };
   io?.to(`user:${order.buyer_id}`).emit("order:changed", payload);
   io?.to("admins").emit("order:changed", payload);
   io?.to("admins").emit("admin:changed", { resource: "dashboard", action });

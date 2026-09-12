@@ -58,7 +58,7 @@ export const createProduct = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const fetchAllProducts = catchAsyncErrors(async (req, res, next) => {
-  const { availability, price, category, ratings, search } = req.query;
+  const { availability, price, category, ratings, search, sort = "newest" } = req.query;
   const page = parseInt(req.query.page) || 1;
   const limit = 10;
   const offset = (page - 1) * limit;
@@ -68,6 +68,13 @@ export const fetchAllProducts = catchAsyncErrors(async (req, res, next) => {
   let index = 1;
 
   let paginationPlaceholders = {};
+  // Only known sort clauses are selected, keeping the query safe and predictable.
+  const sortOrder = {
+    newest: "p.created_at DESC",
+    rating: "p.ratings DESC, p.created_at DESC",
+    "price-low": "p.price ASC, p.created_at DESC",
+    "price-high": "p.price DESC, p.created_at DESC",
+  }[sort] || "p.created_at DESC";
 
   // --- Filter by Availability ---
   if (availability === "in-stock") {
@@ -141,7 +148,7 @@ export const fetchAllProducts = catchAsyncErrors(async (req, res, next) => {
     LEFT JOIN reviews r ON p.id = r.product_id
     ${whereClause}
     GROUP BY p.id
-    ORDER BY p.created_at DESC
+    ORDER BY ${sortOrder}
     LIMIT ${paginationPlaceholders.limit}
     OFFSET ${paginationPlaceholders.offset}
   `;

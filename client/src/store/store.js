@@ -5,6 +5,7 @@ import cartReducer from "./slices/cartSlice";
 import productReducer from "./slices/productSlice";
 import orderReducer from "./slices/orderSlice";
 import wishlistReducer from "./slices/wishlistSlice";
+import storefrontReducer from "./slices/storefrontSlice";
 
 // A cart is local to this browser and remains available after a refresh.
 const loadSavedCart = () => {
@@ -24,6 +25,7 @@ export const store = configureStore({
     product: productReducer,
     order: orderReducer,
     wishlist: wishlistReducer,
+    storefront: storefrontReducer,
   },
   preloadedState: { cart: { cart: loadSavedCart() } },
 });

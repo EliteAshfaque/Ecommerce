@@ -1,174 +1,41 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { ArrowUpRight, Box, CircleDollarSign, Clock3, PackageCheck, ShoppingBag, UsersRound } from "lucide-react";
 import { fetchDashboardStats } from "../store/slices/adminSlice";
 import StatCard, { money } from "../components/StatCard";
+
+const statusStyle = { Processing: "bg-amber-100 text-amber-800", Shipped: "bg-sky-100 text-sky-800", Delivered: "bg-emerald-100 text-emerald-800", Cancelled: "bg-rose-100 text-rose-800" };
+
+const SalesTrend = ({ monthly }) => {
+  const points = monthly.slice(-8);
+  const max = Math.max(...points.map((row) => Number(row.totalSales) || 0), 1);
+  const coordinates = points.map((row, index) => {
+    const x = points.length === 1 ? 50 : (index / (points.length - 1)) * 100;
+    const y = 90 - ((Number(row.totalSales) || 0) / max) * 70;
+    return `${x},${y}`;
+  }).join(" ");
+  if (!points.length) return <p className="py-16 text-sm text-stone">Paid-order revenue will appear here once sales begin.</p>;
+  return <div><div className="relative h-52 overflow-hidden rounded-2xl bg-[linear-gradient(180deg,rgba(102,80,255,.16),rgba(255,255,255,0))]"><div className="pointer-events-none absolute inset-x-0 top-1/4 border-t border-dashed border-primary/15" /><div className="pointer-events-none absolute inset-x-0 top-2/4 border-t border-dashed border-primary/15" /><div className="pointer-events-none absolute inset-x-0 top-3/4 border-t border-dashed border-primary/15" /><svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible" aria-label="Monthly paid sales trend"><defs><linearGradient id="sales-area" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#6650ff" stopOpacity="0.32" /><stop offset="100%" stopColor="#6650ff" stopOpacity="0" /></linearGradient></defs><polygon points={`0,100 ${coordinates} 100,100`} fill="url(#sales-area)" /><polyline points={coordinates} fill="none" stroke="#6650ff" strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />{points.map((row, index) => { const [x, y] = coordinates.split(" ")[index].split(","); return <circle key={row.month} cx={x} cy={y} r="2.1" fill="#fff" stroke="#6650ff" strokeWidth="1.2" vectorEffect="non-scaling-stroke"><title>{`${row.month}: ${money(row.totalSales)}`}</title></circle>; })}</svg></div><div className="mt-3 flex justify-between gap-2 text-[10px] font-semibold uppercase tracking-[.14em] text-stone">{points.map((row) => <span key={row.month}>{String(row.month).slice(0, 3)}</span>)}</div></div>;
+};
 
 const Overview = () => {
   const dispatch = useDispatch();
   const { stats, statsLoading } = useSelector((state) => state.admin);
+  useEffect(() => { dispatch(fetchDashboardStats()); }, [dispatch]);
+  if (statsLoading || !stats) return <div className="space-y-6"><div className="h-10 w-56 animate-pulse rounded-xl bg-mist" /><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 4 }).map((_, index) => <div key={index} className="h-36 animate-pulse rounded-3xl bg-mist" />)}</div></div>;
 
-  useEffect(() => {
-    dispatch(fetchDashboardStats());
-  }, [dispatch]);
-
-  if (statsLoading || !stats) {
-    return (
-      <div className="space-y-6">
-        <div className="h-8 w-40 animate-pulse bg-mist" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-28 animate-pulse bg-mist" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  const status = stats.orderStatusCounts || {};
   const monthly = stats.monthlySales || [];
-  const maxSales = Math.max(
-    ...monthly.map((m) => Number(m.totalSales) || 0),
-    1
-  );
+  const status = stats.orderStatusCounts || {};
+  const categorySales = stats.categorySales || [];
+  const categoryMax = Math.max(...categorySales.map((row) => Number(row.revenue) || 0), 1);
 
-  return (
-    <div>
-      <header className="mb-10">
-        <p className="text-[11px] uppercase tracking-[0.24em] text-stone">
-          Overview
-        </p>
-        <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">
-          Dashboard
-        </h1>
-        <p className="mt-2 text-sm text-stone">
-          Growth {stats.revenueGrowth || "0%"} · {stats.newUsersThisMonth || 0}{" "}
-          new users this month
-        </p>
-      </header>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Revenue" value={money(stats.totalRevenueAllTime)} />
-        <StatCard label="This month" value={money(stats.currentMonthSales)} />
-        <StatCard label="Today" value={money(stats.todayRevenue)} />
-        <StatCard
-          label="Customers"
-          value={String(stats.totalUsersCount || 0)}
-        />
-      </div>
-
-      <div className="mt-10 grid gap-8 lg:grid-cols-2">
-        <section className="admin-surface rounded-2xl p-6">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold">Orders</h2>
-            <Link
-              to="/orders"
-              className="text-[11px] uppercase tracking-[0.16em] text-stone hover:text-ink"
-            >
-              Manage
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {["Processing", "Shipped", "Delivered", "Cancelled"].map((key) => (
-              <div
-                key={key}
-                className="flex items-center justify-between text-sm"
-              >
-                <span className="text-stone">{key}</span>
-                <span className="font-medium tabular-nums">
-                  {status[key] || 0}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="admin-surface rounded-2xl p-6">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold">Low stock</h2>
-            <Link
-              to="/products"
-              className="text-[11px] uppercase tracking-[0.16em] text-stone hover:text-ink"
-            >
-              Products
-            </Link>
-          </div>
-          {(stats.lowStockProducts || []).length === 0 ? (
-            <p className="text-sm text-stone">All products are healthy.</p>
-          ) : (
-            <div className="space-y-3">
-              {stats.lowStockProducts.slice(0, 6).map((p) => (
-                <div
-                  key={p.name}
-                  className="flex items-center justify-between text-sm"
-                >
-                  <span className="truncate pr-4">{p.name}</span>
-                  <span className="tabular-nums text-stone">{p.stock}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
-
-      <section className="admin-surface mt-8 rounded-2xl p-6">
-        <h2 className="mb-6 font-display text-lg font-semibold">
-          Monthly sales
-        </h2>
-        {monthly.length === 0 ? (
-          <p className="text-sm text-stone">No sales data yet.</p>
-        ) : (
-          <div className="flex h-40 items-end gap-2">
-            {monthly.slice(-8).map((row) => (
-              <div
-                key={row.month}
-                className="flex flex-1 flex-col items-center gap-2"
-              >
-                <div
-                  className="w-full bg-ink/80 transition hover:bg-primary"
-                  style={{
-                    height: `${Math.max(
-                      8,
-                      (Number(row.totalSales) / maxSales) * 100
-                    )}%`,
-                  }}
-                  title={money(row.totalSales)}
-                />
-                <span className="text-[9px] uppercase tracking-wide text-stone">
-                  {String(row.month).slice(0, 3)}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {(stats.topSellingProducts || []).length > 0 && (
-        <section className="admin-surface mt-8 rounded-2xl p-6">
-          <h2 className="mb-6 font-display text-lg font-semibold">
-            Top selling
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {stats.topSellingProducts.slice(0, 5).map((p) => (
-              <div key={p.name} className="space-y-2">
-                <div className="aspect-[4/5] overflow-hidden bg-mist">
-                  {p.image && (
-                    <img
-                      src={p.image}
-                      alt={p.name}
-                      className="h-full w-full object-cover"
-                    />
-                  )}
-                </div>
-                <p className="truncate text-sm font-medium">{p.name}</p>
-                <p className="text-xs text-stone">{p.totalQuantity} sold</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-    </div>
-  );
+  return <div className="pb-6"><header className="mb-8 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.24em] text-primary">Operations centre</p><h1 className="mt-2 font-display text-4xl font-semibold tracking-tight">Good morning, LUMERA.</h1><p className="mt-2 text-sm text-stone">A live view of paid sales, fulfilment and customer activity.</p></div><div className="flex flex-wrap gap-2"><Link to="/products" className="admin-quick-link">Add a product <ArrowUpRight className="h-3.5 w-3.5" /></Link><Link to="/sales" className="admin-quick-link admin-quick-link-primary">Create a sale <ArrowUpRight className="h-3.5 w-3.5" /></Link></div></header>
+    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><StatCard label="Paid revenue" value={money(stats.totalRevenueAllTime)} caption={`${stats.revenueGrowth || "0%"} versus last month`} icon={CircleDollarSign} tone="violet" /><StatCard label="This month" value={money(stats.currentMonthSales)} caption={`${money(stats.todayRevenue)} today`} icon={ShoppingBag} tone="blue" /><StatCard label="Customers" value={String(stats.totalUsersCount || 0)} caption={`${stats.newUsersThisMonth || 0} new this month`} icon={UsersRound} tone="rose" /><StatCard label="Needs attention" value={String((stats.lowStockProducts || []).length + (stats.pendingPayments || 0))} caption={`${stats.pendingPayments || 0} pending payments`} icon={Clock3} tone="amber" /></section>
+    <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(300px,.9fr)]"><div className="admin-surface rounded-3xl p-5 md:p-7"><div className="mb-7 flex items-start justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-primary">Revenue performance</p><h2 className="mt-2 font-display text-2xl font-semibold">Paid sales trend</h2></div><span className="rounded-full bg-primary/[.08] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-primary">AED · paid only</span></div><SalesTrend monthly={monthly} /></div><div className="admin-surface rounded-3xl p-5 md:p-7"><div className="flex items-center justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-primary">Fulfilment</p><h2 className="mt-2 font-display text-2xl font-semibold">Order flow</h2></div><Link to="/orders" className="rounded-xl bg-ink px-3 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-white">Open orders</Link></div><div className="mt-7 grid grid-cols-2 gap-3">{["Processing", "Shipped", "Delivered", "Cancelled"].map((name) => <div key={name} className="rounded-2xl border border-border/10 bg-white/55 p-4"><p className="text-xs text-stone">{name}</p><p className="mt-2 font-display text-3xl font-semibold tabular-nums">{status[name] || 0}</p></div>)}</div><div className="mt-5 flex items-center gap-2 rounded-2xl bg-mist/75 p-3 text-xs text-stone"><PackageCheck className="h-4 w-4 shrink-0 text-primary" />{stats.totalOrders || 0} total orders in the system</div></div></section>
+    <section className="mt-6 grid gap-6 xl:grid-cols-2"><div className="admin-surface rounded-3xl p-5 md:p-7"><div className="flex items-center justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-primary">Sales mix</p><h2 className="mt-2 font-display text-2xl font-semibold">Category performance</h2></div><Box className="h-5 w-5 text-primary" /></div>{categorySales.length ? <div className="mt-7 space-y-5">{categorySales.map((category) => <div key={category.category}><div className="flex items-center justify-between gap-4 text-sm"><span className="font-medium">{category.category}</span><span className="text-stone">{money(category.revenue)} · {category.quantity} units</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-mist"><div className="h-full rounded-full bg-[linear-gradient(90deg,#332985,#8d78ff)]" style={{ width: `${Math.max(7, (Number(category.revenue) / categoryMax) * 100)}%` }} /></div></div>)}</div> : <p className="py-14 text-sm text-stone">Category performance appears after paid orders are received.</p>}</div><div className="admin-surface rounded-3xl p-5 md:p-7"><div className="flex items-center justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-primary">Live queue</p><h2 className="mt-2 font-display text-2xl font-semibold">Recent orders</h2></div><Link to="/orders" className="text-xs font-semibold text-primary">View all</Link></div>{(stats.recentOrders || []).length ? <div className="mt-5 divide-y divide-border/10">{stats.recentOrders.map((order) => <div key={order.id} className="flex items-center gap-3 py-4"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/[.08] text-[11px] font-bold text-primary">#{String(order.id).slice(0, 3)}</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{order.customer_name || "Customer"}</p><p className="mt-0.5 text-xs text-stone">{new Date(order.created_at).toLocaleDateString("en-AE", { month: "short", day: "numeric" })} · {money(order.total_price)}</p></div><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${statusStyle[order.order_status] || "bg-mist text-stone"}`}>{order.order_status}</span></div>)}</div> : <p className="py-14 text-sm text-stone">New orders will appear here in real time.</p>}</div></section>
+    <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"><div className="admin-surface rounded-3xl p-5 md:p-7"><div className="flex items-center justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-primary">Inventory</p><h2 className="mt-2 font-display text-2xl font-semibold">Low-stock watchlist</h2></div><Link to="/products" className="text-xs font-semibold text-primary">Manage catalogue</Link></div>{(stats.lowStockProducts || []).length ? <div className="mt-5 space-y-3">{stats.lowStockProducts.slice(0, 5).map((product) => <div key={product.name} className="flex items-center justify-between rounded-2xl bg-mist/70 px-4 py-3"><p className="truncate pr-4 text-sm font-medium">{product.name}</p><span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold text-amber-800">{product.stock} left</span></div>)}</div> : <p className="py-12 text-sm text-stone">Every listed product has healthy stock.</p>}</div><div className="rounded-3xl bg-[#211b52] p-5 text-white shadow-[0_20px_50px_rgba(39,28,104,.25)] md:p-7"><p className="text-[10px] font-bold uppercase tracking-[.18em] text-violet-200">Control room</p><h2 className="mt-2 max-w-sm font-display text-2xl font-semibold">Promotions and fulfilment stay connected.</h2><p className="mt-3 max-w-md text-sm leading-relaxed text-white/65">Create checkout-ready AED discounts, monitor orders, and use the live queue to keep the store moving.</p><div className="mt-7 flex flex-wrap gap-3"><Link to="/sales" className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-[10px] font-bold uppercase tracking-[.14em] text-[#211b52]">Manage sales <ArrowUpRight className="h-3.5 w-3.5" /></Link><Link to="/orders" className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-4 py-3 text-[10px] font-bold uppercase tracking-[.14em] text-white">Fulfil orders <ArrowUpRight className="h-3.5 w-3.5" /></Link></div></div></section>
+  </div>;
 };
 
 export default Overview;

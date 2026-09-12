@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getUser } from "./store/slices/authSlice";
 import { fetchProducts } from "./store/slices/productSlice";
+import { fetchStorefront } from "./store/slices/storefrontSlice";
 
 import Navbar from "./components/Layout/Navbar";
 import Sidebar from "./components/Layout/Sidebar";
@@ -60,6 +61,7 @@ function App() {
   useEffect(() => {
     dispatch(getUser());
     dispatch(fetchProducts());
+    dispatch(fetchStorefront());
   }, [dispatch]);
 
   if (isCheckingAuth) {

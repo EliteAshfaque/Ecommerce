@@ -11,6 +11,9 @@ import { stripeWebhook } from "./controller/paymentcontroller.js";
 import orderRoutes from "./router/orderRoutes.js"; 
 import wishlistRoutes from "./router/wishlistRoutes.js";
 import promotionRoutes from "./router/promotionRoutes.js";
+import storefrontRoutes from "./router/storefrontRoutes.js";
+import addressRoutes from "./router/addressRoutes.js";
+import storefrontAdminRoutes from "./router/storefrontAdminRoutes.js";
 const app = express();
 
 
@@ -54,6 +57,9 @@ app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/order", orderRoutes);
 app.use("/api/v1/wishlist", wishlistRoutes);
 app.use("/api/v1/promotion", promotionRoutes);
+app.use("/api/v1/storefront", storefrontRoutes);
+app.use("/api/v1/address", addressRoutes);
+app.use("/api/v1/admin/storefront", storefrontAdminRoutes);
 // Error middleware must be last so it receives errors from every route.
 app.use(errorMiddleware);
 

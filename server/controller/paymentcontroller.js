@@ -43,6 +43,30 @@ export async function generatePaymentIntent(orderId, totalPrice) {
   }
 }
 
+// Full-order refunds are issued only by the authenticated admin fulfilment flow.
+// A stable Stripe idempotency key makes a retry safe if the network drops.
+export async function createOrderRefund(paymentIntentId, orderId) {
+  try {
+    const refund = await stripe.refunds.create(
+      {
+        payment_intent: paymentIntentId,
+        reason: "requested_by_customer",
+        metadata: { orderId },
+      },
+      { idempotencyKey: `lumera-refund-${orderId}` }
+    );
+    const refundStatus = refund.status === "succeeded"
+      ? "Succeeded"
+      : refund.status === "failed" || refund.status === "canceled"
+        ? "Failed"
+        : "Pending";
+    return { success: true, refund, refundStatus };
+  } catch (error) {
+    console.error("Refund Error:", error.message || error);
+    return { success: false, message: "Stripe could not create the refund." };
+  }
+}
+
 // ==========================================
 // 2. CONTROLLER: Process Payment
 // ==========================================
@@ -95,7 +119,7 @@ export const  stripeWebhook = async (req, res) => {
 
       // 1. FIND AND UPDATE PAYMENT STATUS TO 'Paid'
       const updatedPaymentStatus = "Paid";
-      // Only the first successful webhook can change state and decrement stock.
+      // Only the first successful webhook can change payment state.
       // Stripe may retry a delivered webhook, so this makes fulfilment idempotent.
       const paymentTableUpdateResult = await database.query(
         `UPDATE payments SET payment_status = $1 WHERE payment_intent_id = $2 AND payment_status = 'Pending' RETURNING *`,
@@ -118,7 +142,7 @@ export const  stripeWebhook = async (req, res) => {
 
       // Stock was reserved before the Payment Intent was made; a successful
       // webhook confirms the reservation rather than subtracting it twice.
-      emitOrderChange(updatedOrders[0], "paid");
+      emitOrderChange(updatedOrders[0], "paid", { paymentStatus: "Paid" });
 
       console.log(`✅ Order #${orderId} fulfilled successfully.`);
     } 
@@ -143,10 +167,33 @@ export const  stripeWebhook = async (req, res) => {
           [orderId]
         );
         emitCatalogueChange("stock-released");
-        if (orders[0]) emitOrderChange(orders[0], "payment-failed");
+        if (orders[0]) emitOrderChange(orders[0], "payment-failed", { paymentStatus: "Failed" });
       }
       
       console.log(`❌ Payment failed for Stripe ID: ${paymentIntentId}`);
+    }
+    else if (["charge.refund.updated", "refund.updated"].includes(event.type)) {
+      const refund = event.data.object;
+      const refundStatus = refund.status === "succeeded"
+        ? "Succeeded"
+        : refund.status === "failed" || refund.status === "canceled"
+          ? "Failed"
+          : "Pending";
+      const { rows: payments } = await database.query(
+        `UPDATE payments
+         SET refund_status = $1,
+             refunded_at = CASE WHEN $1 = 'Succeeded' THEN NOW() ELSE refunded_at END
+         WHERE refund_id = $2
+         RETURNING order_id`,
+        [refundStatus, refund.id]
+      );
+      if (payments[0]) {
+        const { rows: orders } = await database.query(
+          "SELECT * FROM orders WHERE id = $1",
+          [payments[0].order_id]
+        );
+        if (orders[0]) emitOrderChange(orders[0], "refund-updated", { refundStatus });
+      }
     }
 
     // Return a 200 response to acknowledge receipt of the event

@@ -1,5 +1,6 @@
-import { Menu, User, ShoppingCart, Sun, Moon, Search, Sparkles } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Menu, User, ShoppingCart, Sun, Moon, Search, Sparkles, MapPin, LocateFixed, LoaderCircle } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -8,12 +9,20 @@ import {
   toggleCart,
   toggleAuthPopup,
 } from "../../store/slices/popupSlice";
+import { getSavedDeliveryLocation, requestDeliveryLocation } from "../../lib/location";
 
 const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const dispatch = useDispatch();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+  const [deliveryLocation, setDeliveryLocation] = useState(() => getSavedDeliveryLocation());
+  const [locationOpen, setLocationOpen] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [locationMessage, setLocationMessage] = useState("");
   const { cart = [] } = useSelector((state) => state.cart);
+  const categories = useSelector((state) => state.storefront.categories);
 
   const cartItemsCount = cart.reduce(
     (total, item) => total + (item.quantity || 1),
@@ -21,6 +30,28 @@ const Navbar = () => {
   );
 
   const isOverHero = location.pathname === "/";
+
+  // A full desktop search keeps discovery one action away on a marketplace-sized catalogue.
+  const submitSearch = (event) => {
+    event.preventDefault();
+    const term = query.trim();
+    if (term) navigate(`/products?search=${encodeURIComponent(term)}`);
+  };
+
+  // The browser asks for permission only after this deliberate customer action.
+  const useCurrentLocation = async () => {
+    setLocating(true);
+    setLocationMessage("");
+    try {
+      const nextLocation = await requestDeliveryLocation();
+      setDeliveryLocation(nextLocation);
+      setLocationMessage("Delivery area saved for this browser.");
+    } catch (error) {
+      setLocationMessage(error.message || "We could not find your location.");
+    } finally {
+      setLocating(false);
+    }
+  };
 
   return (
     <nav
@@ -30,22 +61,19 @@ const Navbar = () => {
           : "border-white/50 bg-fog/70 shadow-[0_10px_30px_rgb(55_45_120_/_0.05)]"
       }`}
     >
-      <div className="mx-auto max-w-7xl px-4">
+      <div className="mx-auto max-w-[1600px] px-4">
         <div className="flex h-16 items-center justify-between">
-          <button
-            type="button"
-            onClick={() => dispatch(toggleSidebar())}
-            aria-label="Open menu"
-            className={`rounded-md p-2 transition ${
-              isOverHero
-                ? "text-white hover:bg-white/10"
-                : "text-foreground hover:bg-mist"
-            }`}
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-
-          <div className="flex flex-1 justify-center">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+            <button
+              type="button"
+              onClick={() => dispatch(toggleSidebar())}
+              aria-label="Open menu"
+              className={`rounded-md p-2 transition ${
+                isOverHero ? "text-white hover:bg-white/10" : "text-foreground hover:bg-mist"
+              }`}
+            >
+              <Menu className="h-6 w-6" />
+            </button>
             <Link to="/">
               <h1
                 className={`flex items-center gap-2 font-display text-xl font-bold tracking-[0.12em] ${
@@ -60,7 +88,23 @@ const Navbar = () => {
             </Link>
           </div>
 
+          <form onSubmit={submitSearch} className="mx-4 hidden max-w-2xl flex-1 md:block">
+            <label className="relative block">
+              <span className="sr-only">Search LUMERA</span>
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-stone" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search the LUMERA marketplace"
+                className="h-10 w-full rounded-xl border border-white/60 bg-white/95 pl-11 pr-4 text-sm text-ink shadow-[0_8px_24px_rgb(14_12_42_/_0.12)] outline-none transition placeholder:text-stone focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
+              />
+            </label>
+          </form>
+
           <div className="flex items-center gap-1 sm:gap-2">
+            <button type="button" onClick={() => setLocationOpen((value) => !value)} className={`hidden items-center gap-1.5 rounded-xl px-2 py-2 text-[10px] font-bold uppercase tracking-[.12em] transition xl:flex ${isOverHero ? "text-white/90 hover:bg-white/10" : "text-foreground hover:bg-mist"}`} aria-expanded={locationOpen}>
+              <MapPin className="h-4 w-4" /> {deliveryLocation?.label || "Set delivery area"}
+            </button>
             <button
               type="button"
               onClick={toggleTheme}
@@ -82,7 +126,7 @@ const Navbar = () => {
               type="button"
               onClick={() => dispatch(toggleSearchBar())}
               aria-label="Search"
-              className={`rounded-xl p-2 transition ${
+              className={`rounded-xl p-2 transition md:hidden ${
                 isOverHero
                   ? "text-white hover:bg-white/10"
                   : "text-foreground hover:bg-mist"
@@ -124,6 +168,29 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+      {locationOpen && (
+        <div className="absolute right-4 top-[4.5rem] z-50 w-[290px] rounded-2xl border border-white/60 bg-white p-4 text-ink shadow-2xl">
+          <p className="text-[10px] font-bold uppercase tracking-[.18em] text-primary">Delivery location</p>
+          <p className="mt-2 text-sm leading-relaxed text-stone">{deliveryLocation?.label ? `Delivering to ${deliveryLocation.label}.` : "Choose your area for a more relevant delivery experience."}</p>
+          <button type="button" onClick={useCurrentLocation} disabled={locating} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-ink px-3 py-3 text-[10px] font-bold uppercase tracking-[.14em] text-white transition hover:bg-primary disabled:cursor-wait disabled:opacity-70">
+            {locating ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
+            {locating ? "Finding your location" : "Use my current location"}
+          </button>
+          {locationMessage && <p className="mt-3 text-xs leading-relaxed text-stone">{locationMessage}</p>}
+        </div>
+      )}
+      {isOverHero && categories.length > 0 && (
+        <div className="absolute top-full hidden w-full border-y border-white/10 bg-[#151331]/70 backdrop-blur-xl lg:block">
+          <div className="mx-auto flex max-w-[1600px] items-center gap-1 overflow-x-auto px-4 py-2.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <Link to="/products" className="shrink-0 rounded-full bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-[#171433] transition hover:bg-violet-100">All departments</Link>
+            {categories.map((category) => (
+              <Link key={category.id} to={`/products?category=${encodeURIComponent(category.name)}`} className="shrink-0 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.11em] text-white/75 transition hover:bg-white/10 hover:text-white">
+                {category.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

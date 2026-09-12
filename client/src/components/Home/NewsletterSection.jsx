@@ -1,17 +1,23 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
+import axiosInstance from "../../lib/axios";
 
 const NewsletterSection = () => {
   const [email, setEmail] = useState("");
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (!email) {
       toast.error("Please enter your email.");
       return;
     }
-    toast.success("You're on the list.");
-    setEmail("");
+    try {
+      const { data } = await axiosInstance.post("/storefront/newsletter", { email });
+      toast.success(data.message);
+      setEmail("");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Could not save your subscription.");
+    }
   };
 
   return (
