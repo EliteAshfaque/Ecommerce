@@ -14,6 +14,7 @@ const LiveUpdates = () => {
   const activeFilters = useSelector((state) => state.product.activeFilters);
   const productIdRef = useRef(currentProductId);
   const filtersRef = useRef(activeFilters);
+  const socketUserRef = useRef();
 
   useEffect(() => {
     productIdRef.current = currentProductId;
@@ -35,6 +36,12 @@ const LiveUpdates = () => {
       if (userId) dispatch(fetchMyOrders());
     };
 
+    // React Strict Mode reruns effects in development. Do not close an in-flight
+    // handshake during that check; reconnect only when authentication changes.
+    if (socketUserRef.current !== undefined && socketUserRef.current !== userId) {
+      realtimeSocket.disconnect();
+    }
+    socketUserRef.current = userId;
     realtimeSocket.on("catalogue:changed", refreshCatalogue);
     realtimeSocket.on("order:changed", refreshOrders);
     realtimeSocket.on("storefront:changed", () => dispatch(fetchStorefront()));
@@ -46,7 +53,6 @@ const LiveUpdates = () => {
       realtimeSocket.off("catalogue:changed", refreshCatalogue);
       realtimeSocket.off("order:changed", refreshOrders);
       realtimeSocket.off("storefront:changed");
-      realtimeSocket.disconnect();
     };
   }, [dispatch, userId]);
 

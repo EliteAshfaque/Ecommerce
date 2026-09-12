@@ -55,6 +55,16 @@
   50% { box-shadow: 0 16px 44px rgb(236 72 153 / .24), 0 8px 22px rgb(var(--accent) / .34); }
 }
 
+@keyframes hero-pan {
+  from { transform: scale(1.015); }
+  to { transform: scale(1.09); }
+}
+
+@keyframes ambient-float {
+  0%, 100% { transform: translate3d(-5%, -3%, 0) scale(1); }
+  50% { transform: translate3d(8%, 6%, 0) scale(1.12); }
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -78,6 +88,39 @@
 }
 
 @layer components {
+  /* The account UI is a dedicated, opaque layer rather than a translucent page card. */
+  .profile-dimmer {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgb(16 12 35 / .56);
+    backdrop-filter: blur(5px);
+  }
+
+  .profile-drawer {
+    position: fixed;
+    inset: 0 0 0 auto;
+    z-index: 100;
+    isolation: isolate;
+    display: flex;
+    width: min(100vw, 460px);
+    max-width: 460px;
+    flex-direction: column;
+    overflow: hidden;
+    border-left: 1px solid rgb(255 255 255 / .72);
+    background: #fbfbff;
+    box-shadow: -24px 0 70px rgb(31 20 68 / .28);
+    opacity: 1;
+  }
+
+  @media (max-width: 520px) {
+    .profile-drawer {
+      width: 100vw;
+      max-width: none;
+      border-left: 0;
+    }
+  }
+
   .page-shell {
     position: relative;
     min-height: 100vh;
@@ -86,6 +129,48 @@
       radial-gradient(ellipse 80% 50% at 10% -10%, rgb(119 92 255 / .16), transparent 55%),
       radial-gradient(ellipse 60% 40% at 100% 0%, rgb(244 114 182 / .12), transparent 50%),
       linear-gradient(180deg, rgb(var(--fog)) 0%, rgb(var(--mist)) 48%, rgb(var(--fog)) 100%);
+  }
+
+  /* Homepage background motion is deliberately slow so products stay the focus. */
+  .home-showcase {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+      linear-gradient(90deg, rgb(var(--ink) / .024) 1px, transparent 1px),
+      linear-gradient(rgb(var(--ink) / .024) 1px, transparent 1px),
+      linear-gradient(180deg, #fbfbff 0%, #f4f2ff 48%, #fbfbff 100%);
+    background-size: 56px 56px, 56px 56px, auto;
+  }
+
+  .home-ambient {
+    pointer-events: none;
+    position: absolute;
+    z-index: 0;
+    width: 42rem;
+    height: 42rem;
+    border-radius: 9999px;
+    filter: blur(68px);
+    opacity: .38;
+    animation: ambient-float 18s ease-in-out infinite;
+  }
+
+  .home-ambient-violet {
+    top: 34rem;
+    left: -22rem;
+    background: radial-gradient(circle, rgb(130 103 255 / .42), transparent 68%);
+  }
+
+  .home-ambient-rose {
+    top: 92rem;
+    right: -24rem;
+    background: radial-gradient(circle, rgb(244 114 182 / .26), transparent 68%);
+    animation-direction: reverse;
+    animation-duration: 22s;
+  }
+
+  .home-reveal {
+    animation: fade-up .8s ease-out both;
   }
 
   .page-shell::before {
@@ -108,6 +193,11 @@
     filter: blur(70px);
     background: radial-gradient(circle, rgb(var(--accent) / .30), rgb(244 114 182 / .13) 42%, transparent 70%);
     animation: aurora-shift 12s ease-in-out infinite;
+  }
+
+  /* Slow campaign-image motion makes DB-managed banners feel editorial, not static. */
+  .animate-hero-pan {
+    animation: hero-pan 7.2s ease-out both;
   }
 
   .hero-aurora {
@@ -239,5 +329,13 @@
 
   .field::placeholder {
     color: rgb(var(--stone) / 0.7);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-pan,
+  .home-ambient,
+  .home-reveal {
+    animation: none;
   }
 }

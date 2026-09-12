@@ -52,9 +52,12 @@ export const deleteAdminUser = createAsyncThunk(
 // GET /product (admin catalogue view)
 export const fetchAdminProducts = createAsyncThunk(
   "admin/fetchProducts",
-  async (page = 1, thunkAPI) => {
+  async (input = 1, thunkAPI) => {
     try {
-      const res = await axiosInstance.get(`/product?page=${page}`);
+      const { page, category } = typeof input === "object" ? input : { page: input, category: "" };
+      const params = new URLSearchParams({ page: String(page || 1) });
+      if (category) params.set("category", category);
+      const res = await axiosInstance.get(`/product?${params}`);
       return res.data;
     } catch (error) {
       const message =

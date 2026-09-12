@@ -16,6 +16,7 @@ const LiveUpdates = () => {
   const productPage = useSelector((state) => state.admin.productsPage);
   const userPage = useSelector((state) => state.admin.usersPage);
   const pagesRef = useRef({ productPage, userPage });
+  const socketUserRef = useRef();
 
   useEffect(() => {
     pagesRef.current = { productPage, userPage };
@@ -33,6 +34,11 @@ const LiveUpdates = () => {
       if (resource === "dashboard") refreshOrderData();
     };
 
+    // Keep the first development handshake alive through Strict Mode's effect check.
+    if (socketUserRef.current !== undefined && socketUserRef.current !== userId) {
+      realtimeSocket.disconnect();
+    }
+    socketUserRef.current = userId;
     realtimeSocket.on("order:changed", refreshOrderData);
     realtimeSocket.on("admin:changed", refreshAdminData);
     realtimeSocket.connect();
@@ -40,7 +46,6 @@ const LiveUpdates = () => {
     return () => {
       realtimeSocket.off("order:changed", refreshOrderData);
       realtimeSocket.off("admin:changed", refreshAdminData);
-      realtimeSocket.disconnect();
     };
   }, [dispatch, userId]);
 

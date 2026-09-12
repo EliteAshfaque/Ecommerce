@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Package, ChevronDown, ShoppingBag } from "lucide-react";
+import { Package, ChevronDown, ShoppingBag, Star } from "lucide-react";
 import { fetchMyOrders } from "../store/slices/orderSlice";
 import { toggleAuthPopup } from "../store/slices/popupSlice";
 
@@ -35,6 +35,7 @@ const OrderCard = ({ order }) => {
   const items = Array.isArray(order.order_items) ? order.order_items : [];
   const shipping = order.shipping_info || {};
   const shortId = String(order.id || "").slice(0, 8).toUpperCase();
+  const canReview = order.payment_status === "Paid" && order.order_status !== "Cancelled";
 
   return (
     <article className="border-b border-border/10 py-8">
@@ -140,6 +141,7 @@ const OrderCard = ({ order }) => {
                   <p className="mt-1 text-sm text-stone">
                     Qty {item.quantity} · {formatMoney(item.price)}
                   </p>
+                  {canReview && item.product_id && <Link to={`/product/${item.product_id}?review=1#reviews`} className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/[.07] px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-primary transition hover:bg-primary hover:text-white"><Star className="h-3.5 w-3.5" />Rate & review</Link>}
                 </div>
                 <p className="shrink-0 text-sm tabular-nums">
                   {formatMoney(Number(item.price) * Number(item.quantity || 1))}

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { X, Search, ArrowRight, Package, Sparkles } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { toggleSearchBar } from "../../store/slices/popupSlice";
+import { toggleAIModal, toggleSearchBar } from "../../store/slices/popupSlice";
 import axiosInstance from "../../lib/axios";
 import { getProductImage } from "../Products/ProductCard";
 
@@ -89,6 +89,11 @@ const SearchOverlay = () => {
     navigate(`/product/${productId}`);
   };
 
+  const openAIFind = () => {
+    close();
+    dispatch(toggleAIModal());
+  };
+
   return (
     <div className="fixed inset-0 z-50">
       {/* Backdrop */}
@@ -152,6 +157,7 @@ const SearchOverlay = () => {
               Press <kbd className="rounded border border-border/20 px-1.5 py-0.5">Enter</kbd> to search ·{" "}
               <kbd className="rounded border border-border/20 px-1.5 py-0.5">Esc</kbd> to close
             </p>
+            <button type="button" onClick={openAIFind} className="mt-4 flex w-full items-center justify-between rounded-2xl border border-primary/20 bg-primary/[.05] px-4 py-3 text-left transition hover:bg-primary/[.1]"><span className="flex items-center gap-2"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-white"><Sparkles className="h-4 w-4" /></span><span><span className="block text-xs font-bold text-ink">Need help choosing?</span><span className="mt-0.5 block text-[11px] text-stone">Ask Gemini AI to curate products for you.</span></span></span><ArrowRight className="h-4 w-4 text-primary" /></button>
           </div>
 
           {searchQuery.trim().length >= 2 && (

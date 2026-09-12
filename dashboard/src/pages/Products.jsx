@@ -9,6 +9,7 @@ import {
 } from "../store/slices/adminSlice";
 import ProductForm from "../components/ProductForm";
 import { getProductImage } from "../data/products";
+import { categories } from "../data/products";
 
 const DashboardProducts = () => {
   const dispatch = useDispatch();
@@ -23,16 +24,17 @@ const DashboardProducts = () => {
 
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [category, setCategory] = useState("");
 
   useEffect(() => {
-    dispatch(fetchAdminProducts(1));
-  }, [dispatch]);
+    dispatch(fetchAdminProducts({ page: 1, category }));
+  }, [dispatch, category]);
 
   const handleCreate = async (formData) => {
     const res = await dispatch(createAdminProduct(formData));
     if (res.meta.requestStatus === "fulfilled") {
       setShowForm(false);
-      dispatch(fetchAdminProducts(productsPage));
+      dispatch(fetchAdminProducts({ page: productsPage, category }));
     }
   };
 
@@ -42,7 +44,7 @@ const DashboardProducts = () => {
     );
     if (res.meta.requestStatus === "fulfilled") {
       setEditing(null);
-      dispatch(fetchAdminProducts(productsPage));
+      dispatch(fetchAdminProducts({ page: productsPage, category }));
     }
   };
 
@@ -75,6 +77,11 @@ const DashboardProducts = () => {
           Add product
         </button>
       </header>
+
+      <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
+        <button type="button" onClick={() => setCategory("")} className={`shrink-0 rounded-xl px-3.5 py-2 text-xs font-bold transition ${!category ? "bg-ink text-white" : "admin-surface text-stone"}`}>All categories</button>
+        {categories.map((item) => <button key={item.id} type="button" onClick={() => setCategory(item.name)} className={`shrink-0 rounded-xl px-3.5 py-2 text-xs font-bold transition ${category === item.name ? "bg-ink text-white" : "admin-surface text-stone"}`}>{item.name}</button>)}
+      </div>
 
       {showForm && !editing && (
         <div className="mb-8">
@@ -154,7 +161,7 @@ const DashboardProducts = () => {
             <button
               key={page}
               type="button"
-              onClick={() => dispatch(fetchAdminProducts(page))}
+              onClick={() => dispatch(fetchAdminProducts({ page, category }))}
               className={`h-9 min-w-9 px-2 text-sm ${
                 productsPage === page
                   ? "bg-ink text-fog"

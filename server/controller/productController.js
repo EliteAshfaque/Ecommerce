@@ -3,6 +3,7 @@ import { catchAsyncErrors } from "../middlewares/catchAsynError.js";
 import database from "../database/db.js";
 import cloudinary from "cloudinary";
 import { emitCatalogueChange } from "../realtime/socket.js";
+import { getAIRecommendation } from "../utils/getAIRecommondation.js";
 
 export const createProduct = catchAsyncErrors(async (req, res, next) => {
   const { name, description, price, category, stock } = req.body;
@@ -465,6 +466,9 @@ export const fetchAIFilteredProducts = catchAsyncErrors(async (req, res, next) =
   if (!userPrompt) {
     return next(new ErrorHandler("Provide a valid prompt.", 400));
   }
+  if (!process.env.GEMINI_API_KEY) {
+    return next(new ErrorHandler("Gemini AI search is not configured. Add GEMINI_API_KEY to server/config/config.env and restart the server.", 503));
+  }
 
   const filterKeywords = (query) => {
     const stopWords = new Set([
@@ -495,26 +499,15 @@ export const fetchAIFilteredProducts = catchAsyncErrors(async (req, res, next) =
     [keywords]
   );
 
-  const filteredProducts = result.rows;
+  // When keyword matching is too narrow, let Gemini rank a bounded catalogue instead.
+  const candidates = result.rows.length
+    ? result.rows
+    : (await database.query("SELECT * FROM products ORDER BY ratings DESC, created_at DESC LIMIT 80")).rows;
 
-  if (filteredProducts.length === 0) {
-    return res.status(200).json({
-      success: true,
-      message: "No products found matching your prompt.",
-      products: [],
-    });
-  }
-
-  // STEP 2: AI FILTERING
-  const { success, products } = await getAIRecommendation(
-    req,
-    res,
-    userPrompt,
-    filteredProducts
-  );
+  const products = await getAIRecommendation(userPrompt, candidates);
 
   res.status(200).json({
-    success: success,
+    success: true,
     message: "AI filtered products.",
     products,
   });

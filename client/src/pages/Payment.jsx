@@ -55,6 +55,7 @@ const Payment = () => {
   const [promoCode, setPromoCode] = useState("");
   const [activePromotion, setActivePromotion] = useState(null);
   const [locating, setLocating] = useState(false);
+  const [deliveryPin, setDeliveryPin] = useState(() => getSavedDeliveryLocation());
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [rememberAddress, setRememberAddress] = useState(false);
@@ -112,6 +113,7 @@ const Payment = () => {
   const applySavedAddress = (address) => {
     setSelectedAddressId(address.id);
     setRememberAddress(false);
+    if (address.latitude && address.longitude) setDeliveryPin({ latitude: address.latitude, longitude: address.longitude, label: address.label });
     setShipping((previous) => ({ ...previous, full_name: address.recipient_name, phone: address.phone, address: address.address, city: address.city, state: address.state, emirate: address.emirate, country: address.country, pincode: address.pincode }));
   };
 
@@ -120,6 +122,7 @@ const Payment = () => {
     setLocating(true);
     try {
       const location = await requestDeliveryLocation();
+      setDeliveryPin(location);
       setShipping((previous) => ({
         ...previous,
         address: previous.address || location.address || "",
@@ -357,13 +360,15 @@ const Payment = () => {
                     <h2 className="flex items-center gap-2 font-display text-2xl font-semibold tracking-tight">
                       <MapPin className="h-5 w-5 text-primary" /> Shipping details
                     </h2>
-                    {getSavedDeliveryLocation()?.label && <p className="mt-1 text-xs text-stone">Saved delivery area: {getSavedDeliveryLocation().label}</p>}
+                    {deliveryPin?.label && <p className="mt-1 text-xs text-stone">Saved delivery area: {deliveryPin.label}</p>}
                   </div>
                   <button type="button" onClick={useCurrentLocation} disabled={locating} className="inline-flex items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary/[.06] px-3 py-2.5 text-[10px] font-bold uppercase tracking-[.12em] text-primary transition hover:bg-primary hover:text-white disabled:cursor-wait disabled:opacity-70">
                     {locating ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
                     {locating ? "Locating" : "Use my location"}
                   </button>
                 </div>
+
+                {deliveryPin?.latitude && deliveryPin?.longitude && <div className="flex flex-col gap-3 rounded-2xl border border-primary/15 bg-primary/[.045] p-3 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-2"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-white"><MapPin className="h-4 w-4" /></span><div><p className="text-xs font-bold text-ink">Exact delivery pin saved</p><p className="mt-0.5 text-[11px] text-stone">{Number(deliveryPin.latitude).toFixed(5)}, {Number(deliveryPin.longitude).toFixed(5)}</p></div></div><a href={`https://www.google.com/maps?q=${encodeURIComponent(`${deliveryPin.latitude},${deliveryPin.longitude}`)}`} target="_blank" rel="noreferrer" className="rounded-xl border border-primary/20 bg-white px-3 py-2 text-center text-[10px] font-bold uppercase tracking-[.12em] text-primary">Preview pin</a></div>}
 
                 {savedAddresses.length > 0 && <div className="flex gap-3 overflow-x-auto pb-1">{savedAddresses.map((address) => <button key={address.id} type="button" onClick={() => applySavedAddress(address)} className={`min-w-[190px] rounded-2xl border p-3 text-left transition ${selectedAddressId === address.id ? "border-primary bg-primary/[.06]" : "border-border/10 bg-white/55 hover:border-primary/30"}`}><p className="text-xs font-bold">{address.label}{address.is_default ? " · Default" : ""}</p><p className="mt-1 truncate text-[11px] text-stone">{address.address}, {address.city}</p></button>)}</div>}
 

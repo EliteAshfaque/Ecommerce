@@ -8,6 +8,7 @@ import {
   toggleSearchBar,
   toggleCart,
   toggleAuthPopup,
+  toggleAIModal,
 } from "../../store/slices/popupSlice";
 import { getSavedDeliveryLocation, requestDeliveryLocation } from "../../lib/location";
 
@@ -100,6 +101,15 @@ const Navbar = () => {
               />
             </label>
           </form>
+
+          <button
+            type="button"
+            onClick={() => dispatch(toggleAIModal())}
+            className={`hidden items-center gap-2 rounded-xl border px-3 py-2 text-[10px] font-bold uppercase tracking-[.12em] transition lg:inline-flex ${isOverHero ? "border-white/20 bg-white/10 text-white hover:bg-white/20" : "border-primary/20 bg-primary/[.06] text-primary hover:bg-primary hover:text-white"}`}
+            aria-label="Find products with Gemini AI"
+          >
+            <Sparkles className="h-3.5 w-3.5" /> AI Find
+          </button>
 
           <div className="flex items-center gap-1 sm:gap-2">
             <button type="button" onClick={() => setLocationOpen((value) => !value)} className={`hidden items-center gap-1.5 rounded-xl px-2 py-2 text-[10px] font-bold uppercase tracking-[.12em] transition xl:flex ${isOverHero ? "text-white/90 hover:bg-white/10" : "text-foreground hover:bg-mist"}`} aria-expanded={locationOpen}>

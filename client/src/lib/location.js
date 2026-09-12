@@ -18,7 +18,8 @@ export const getSavedDeliveryLocation = () => {
   }
 };
 
-const loadGoogleMaps = () => new Promise((resolve, reject) => {
+// Places powers building, tower, street, and area suggestions in the delivery picker.
+export const loadGoogleMaps = () => new Promise((resolve, reject) => {
   if (window.google?.maps) return resolve(window.google.maps);
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -26,23 +27,27 @@ const loadGoogleMaps = () => new Promise((resolve, reject) => {
 
   const existing = document.querySelector("script[data-lumera-google-maps]");
   if (existing) {
-    existing.addEventListener("load", () => resolve(window.google?.maps), { once: true });
+    if (window.google?.maps) return resolve(window.google.maps);
+    const previous = window.__lumeraMapsReady;
+    window.__lumeraMapsReady = () => { previous?.(); resolve(window.google?.maps); };
     existing.addEventListener("error", () => reject(new Error("Maps could not be loaded.")), { once: true });
     return;
   }
 
   const script = document.createElement("script");
   script.dataset.lumeraGoogleMaps = "true";
-  // Google recommends asynchronous loading; the script onload handler below
-  // resolves the Maps service before reverse-geocoding is attempted.
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&v=weekly&loading=async`;
+  // Google signals API readiness through this callback when loading asynchronously.
+  window.__lumeraMapsReady = () => {
+    delete window.__lumeraMapsReady;
+    resolve(window.google?.maps);
+  };
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places&v=weekly&loading=async&callback=__lumeraMapsReady`;
   script.async = true;
-  script.onload = () => resolve(window.google?.maps);
   script.onerror = () => reject(new Error("Maps could not be loaded."));
   document.head.appendChild(script);
 });
 
-const reverseGeocode = async (latitude, longitude) => {
+export const reverseGeocode = async (latitude, longitude) => {
   const maps = await loadGoogleMaps();
   const geocoder = new maps.Geocoder();
   const { results } = await geocoder.geocode({ location: { lat: latitude, lng: longitude } });
@@ -54,6 +59,25 @@ const reverseGeocode = async (latitude, longitude) => {
     city: getAddressComponent(components, "locality") || getAddressComponent(components, "administrative_area_level_2"),
     emirate: normaliseEmirate(getAddressComponent(components, "administrative_area_level_1")),
     country: getAddressComponent(components, "country"),
+  };
+};
+
+// A Places Autocomplete result has the same address data shape as Geocoder.
+export const locationFromPlace = (place) => {
+  const components = place?.address_components || [];
+  const location = place?.geometry?.location;
+  const latitude = typeof location?.lat === "function" ? location.lat() : location?.lat;
+  const longitude = typeof location?.lng === "function" ? location.lng() : location?.lng;
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+  return {
+    latitude,
+    longitude,
+    address: place.formatted_address || place.name || "",
+    city: getAddressComponent(components, "locality") || getAddressComponent(components, "administrative_area_level_2"),
+    emirate: normaliseEmirate(getAddressComponent(components, "administrative_area_level_1")),
+    country: getAddressComponent(components, "country") || "United Arab Emirates",
+    label: place.name || getAddressComponent(components, "locality") || "Delivery area",
+    savedAt: new Date().toISOString(),
   };
 };
 

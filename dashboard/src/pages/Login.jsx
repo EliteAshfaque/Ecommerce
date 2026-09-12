@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { login } from "../store/slices/authSlice";
+import { login, logout } from "../store/slices/authSlice";
 import { ArrowRight, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 
 const Login = () => {
@@ -19,7 +19,7 @@ const Login = () => {
   if (!isCheckingAuth && authUser && authUser.role !== "Admin") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-fog px-6">
-        <div className="admin-surface max-w-md rounded-3xl p-8 text-center"><ShieldCheck className="mx-auto h-8 w-8 text-primary" /><h1 className="mt-5 font-display text-2xl font-semibold">Admin access required</h1><p className="mt-3 text-sm leading-relaxed text-stone">This signed-in account does not have LUMERA administrator permissions. Sign out in the storefront, then use an Admin account here.</p></div>
+        <div className="admin-surface max-w-md rounded-3xl p-8 text-center"><ShieldCheck className="mx-auto h-8 w-8 text-primary" /><h1 className="mt-5 font-display text-2xl font-semibold">Admin access required</h1><p className="mt-3 text-sm leading-relaxed text-stone">This signed-in account does not have LUMERA administrator permissions. Sign out, then continue with an Admin account.</p><button type="button" onClick={() => dispatch(logout())} className="mt-6 rounded-xl bg-ink px-5 py-3 text-[10px] font-bold uppercase tracking-[.14em] text-white transition hover:bg-primary">Sign out and continue</button></div>
       </div>
     );
   }

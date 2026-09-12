@@ -88,8 +88,10 @@ export const dashboardStats = catchAsyncErrors(async (req, res, next) => {
     // 6. Monthly Sales For Line Chart (TYPO FIXED)
     const monthlySalesQuery = await database.query(`
       SELECT 
-      TO_CHAR(created_at, 'Mon YYYY') AS month,
-      DATE_TRUNC('month', created_at) AS date,
+      -- Both orders and payments have created_at. Sales belongs to the order
+      -- timeline, so qualify every date reference with the orders alias.
+      TO_CHAR(o.created_at, 'Mon YYYY') AS month,
+      DATE_TRUNC('month', o.created_at) AS date,
       SUM(o.total_price) AS totalSales
       FROM orders o
       JOIN payments p ON p.order_id = o.id

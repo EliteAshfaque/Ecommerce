@@ -134,6 +134,7 @@ const initialState = {
   isPostingReview: false,
   isDeletingReview: false,
   aiLoading: false,
+  aiQuery: "",
   error: null,
 };
 
@@ -226,6 +227,11 @@ const productSlice = createSlice({
       .addCase(fetchProductWithAI.fulfilled, (state, action) => {
         state.aiLoading = false;
         state.products = action.payload.products || [];
+        state.totalProducts = state.products.length;
+        state.currentPage = 1;
+        state.totalPages = 1;
+        state.activeFilters = { ai: true };
+        state.aiQuery = typeof action.meta.arg === "string" ? action.meta.arg : action.meta.arg?.userPrompt || "";
       })
       .addCase(fetchProductWithAI.rejected, (state, action) => {
         state.aiLoading = false;

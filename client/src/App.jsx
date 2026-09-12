@@ -14,6 +14,7 @@ import LoginModal from "./components/Layout/LoginModal";
 import AISearchModal from "./components/Products/AISearchModal";
 import Footer from "./components/Layout/Footer";
 import LiveUpdates from "./components/LiveUpdates";
+import DeliveryAddressPrompt from "./components/Account/DeliveryAddressPrompt";
 
 import Index from "./pages/Home";
 import Products from "./pages/Products";
@@ -79,6 +80,7 @@ function App() {
         <LoginModal />
         <AISearchModal />
         <LiveUpdates />
+        <DeliveryAddressPrompt />
 
         <Routes>
           <Route path="/" element={<Index />} />
