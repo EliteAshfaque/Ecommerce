@@ -4,7 +4,8 @@ export async function getAIRecommendation(userPrompt, products) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("Gemini AI search is not configured.");
 
-  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  // Keep the server default aligned with the model endpoint used for manual checks.
+  const model = process.env.GEMINI_MODEL || "gemini-flash-latest";
   const catalogue = products.map((product) => ({
     id: product.id,
     name: product.name,
