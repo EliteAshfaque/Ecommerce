@@ -1,0 +1,3 @@
+# Local environment configuration — never commit credentials.
+server/config/config.env
+
