@@ -8,6 +8,8 @@ export async function createProductsTable() {
         name VARCHAR(255) NOT NULL, 
         description TEXT NOT NULL,
         price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
+        compare_at_price DECIMAL(10,2) CHECK (compare_at_price IS NULL OR compare_at_price >= price),
+        badge VARCHAR(40),
         category VARCHAR(100) NOT NULL,
         ratings DECIMAL(3,2) DEFAULT 0 CHECK (ratings BETWEEN 0 AND 5),
         images JSONB DEFAULT '[]'::JSONB,

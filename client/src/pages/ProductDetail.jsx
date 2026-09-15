@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus, ShieldCheck, Star, Truck } from "lucide-react";
 import { toast } from "react-toastify";
 import {
   clearProduct,
@@ -30,6 +30,16 @@ const ProductDetail = () => {
     setActiveImage(0);
     setQuantity(1);
   }, [id]);
+
+  // Save the actual product view locally so the home page can offer a useful, private return path.
+  useEffect(() => {
+    if (!product?.id) return;
+    try {
+      const saved = JSON.parse(window.localStorage.getItem("lumera-recently-viewed-v1") || "[]");
+      const next = [product, ...(Array.isArray(saved) ? saved : []).filter((item) => item?.id !== product.id)].slice(0, 8);
+      window.localStorage.setItem("lumera-recently-viewed-v1", JSON.stringify(next));
+    } catch { /* Browser storage can be unavailable in private modes. */ }
+  }, [product]);
 
   const images = useMemo(() => getProductImages(product), [product]);
 
@@ -74,6 +84,9 @@ const ProductDetail = () => {
   });
   const stock = Number(product.stock || 0);
   const inStock = stock > 0;
+  const compareAt = Number(product.compare_at_price || 0);
+  const hasSaving = compareAt > Number(product.price || 0);
+  const savingPercent = hasSaving ? Math.round((1 - Number(product.price) / compareAt) * 100) : 0;
 
   const handleAddToCart = () => {
     if (!inStock) return toast.error("Unavailable");
@@ -121,15 +134,14 @@ const ProductDetail = () => {
             )}
           </div>
 
-          {/* Info — sparse luxury */}
+          {/* Product facts remain clear so this feels like a practical marketplace detail page. */}
           <div className="md:pt-8">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-stone">
-              {product.category}
-            </p>
+            <div className="flex flex-wrap items-center gap-2"><p className="text-[11px] uppercase tracking-[0.22em] text-stone">{product.category}</p>{product.badge && <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[.12em] text-amber-900">{product.badge}</span>}</div>
             <h1 className="mt-4 font-display text-3xl font-semibold leading-tight tracking-tight md:text-4xl lg:text-[2.75rem]">
               {product.name}
             </h1>
-            <p className="mt-5 text-lg tabular-nums text-ink/90">{price}</p>
+            <div className="mt-5 flex flex-wrap items-end gap-x-3 gap-y-2"><p className="font-display text-3xl font-semibold tabular-nums text-ink">{price}</p>{hasSaving && <><p className="text-base tabular-nums text-stone line-through">{compareAt.toLocaleString("en-AE", { style: "currency", currency: "AED" })}</p><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.1em] text-emerald-700">Save {savingPercent}%</span></>}</div>
+            <div className="mt-4 flex flex-wrap items-center gap-4 text-sm"><span className="inline-flex items-center gap-1.5 font-semibold"><Star className="h-4 w-4 fill-amber-400 text-amber-400" />{Number(product.ratings || 0).toFixed(1)}</span><span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${inStock ? "text-emerald-700" : "text-rose-600"}`}><Truck className="h-4 w-4" />{inStock ? "UAE delivery available" : "Currently unavailable"}</span></div>
 
             <p className="mt-8 max-w-md text-[15px] leading-relaxed text-stone">
               {product.description}
@@ -171,9 +183,7 @@ const ProductDetail = () => {
               {inStock ? "Add to bag" : "Sold out"}
             </button>
 
-            <p className="mt-4 text-xs text-stone">
-              {inStock ? "In stock · Free returns" : "Currently unavailable"}
-            </p>
+            <p className="mt-4 flex items-center gap-2 text-xs text-stone"><ShieldCheck className="h-4 w-4 text-primary" />{inStock ? "Stock is confirmed again at secure checkout." : "Check back soon for availability."}</p>
           </div>
         </div>
 

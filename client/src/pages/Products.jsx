@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { fetchProducts } from "../store/slices/productSlice";
-import { toggleAIModal } from "../store/slices/popupSlice";
 import { categories as fallbackCategories } from "../data/products";
 import ProductCard from "../components/Products/ProductCard";
 import ProductFilters from "../components/Products/ProductFilters";
@@ -96,7 +95,6 @@ const Products = () => {
               <input value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Search products, materials or categories" className="w-full rounded-2xl border border-border/10 bg-white/60 py-3 pl-11 pr-4 text-sm outline-none transition focus:border-primary/40 focus:ring-4 focus:ring-primary/10" />
             </form>
             <div className="flex items-center gap-2">
-              <button type="button" onClick={() => dispatch(toggleAIModal())} className="inline-flex items-center gap-2 rounded-2xl border border-primary/20 bg-primary/[.06] px-3 py-3 text-xs font-semibold text-primary transition hover:bg-primary hover:text-white"><Sparkles className="h-4 w-4" /><span className="hidden sm:inline">AI Find</span></button>
               <button type="button" onClick={() => setShowFilters((value) => !value)} className="inline-flex items-center gap-2 rounded-2xl border border-border/15 bg-white/60 px-4 py-3 text-xs font-semibold text-ink lg:hidden"><SlidersHorizontal className="h-4 w-4 text-primary" /> Filter{activeCount ? ` (${activeCount})` : ""}</button>
               <select value={sort} onChange={(event) => setParams({ sort: event.target.value })} className="rounded-2xl border border-border/15 bg-white/60 px-4 py-3 text-xs font-semibold text-ink outline-none">
                 {sortOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}

@@ -7,6 +7,7 @@ import {
   updateOrderStatus,
   deleteOrder,
 } from "../controller/orderController.js";
+import { createReturnRequest, getAdminReturns, getMyReturns, updateReturnRequest } from "../controller/returnController.js";
 import {
   isAuthenticated,
   authorizeRoles,
@@ -17,6 +18,8 @@ const router = express.Router();
 // USER ROUTES
 router.post("/new", isAuthenticated, placeNewOrder);
 router.get("/orders/me", isAuthenticated, fetchMyOrders);
+router.get("/returns/me", isAuthenticated, getMyReturns);
+router.post("/:orderId/returns", isAuthenticated, createReturnRequest);
 router.get("/:orderId", isAuthenticated, fetchSingleOrder);
 
 // ADMIN ROUTES
@@ -40,5 +43,7 @@ router.delete(
   authorizeRoles("Admin"),
   deleteOrder
 );
+router.get("/admin/returns", isAuthenticated, authorizeRoles("Admin"), getAdminReturns);
+router.put("/admin/returns/:id", isAuthenticated, authorizeRoles("Admin"), updateReturnRequest);
 
 export default router;

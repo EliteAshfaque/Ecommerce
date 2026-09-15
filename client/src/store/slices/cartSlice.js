@@ -1,5 +1,24 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const CART_STORAGE_KEY = "lumera-cart-v1";
+
+// STEP 1: Restore only a previously chosen bag; credentials and payments are never stored here.
+const loadSavedCart = () => {
+  if (typeof window === "undefined") return [];
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(CART_STORAGE_KEY) || "[]");
+    return Array.isArray(saved) ? saved.filter((item) => item?.product?.id && Number(item.quantity) > 0) : [];
+  } catch {
+    return [];
+  }
+};
+
+// STEP 2: Keep the bag available after a refresh without changing the server-side order source of truth.
+const saveCart = (cart) => {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); } catch { /* Storage can be unavailable in private browsing. */ }
+};
+
 /**
  * CART SLICE
  * ----------
@@ -24,7 +43,7 @@ const cartSlice = createSlice({
   // Starting value when the app first loads
   // cart: [] means the basket is empty at the beginning
   initialState: {
-    cart: [],
+    cart: loadSavedCart(),
   },
 
   // Reducers = functions that update the cart state
@@ -79,6 +98,7 @@ const cartSlice = createSlice({
             : requestedQuantity,
         });
       }
+      saveCart(state.cart);
     },
 
     /**
@@ -98,6 +118,7 @@ const cartSlice = createSlice({
       state.cart = state.cart.filter(
         (item) => item.product.id !== action.payload.id
       );
+      saveCart(state.cart);
     },
 
     /**
@@ -130,6 +151,7 @@ const cartSlice = createSlice({
         item.quantity = Number.isFinite(maxQuantity)
           ? Math.min(nextQuantity, maxQuantity)
           : nextQuantity;
+        saveCart(state.cart);
       }
     },
 
@@ -146,6 +168,7 @@ const cartSlice = createSlice({
     clearCart(state) {
       // Reset cart back to an empty array
       state.cart = [];
+      saveCart(state.cart);
     },
   },
 });

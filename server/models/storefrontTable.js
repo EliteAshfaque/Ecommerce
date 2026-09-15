@@ -68,6 +68,10 @@ export async function createStorefrontTables() {
       subject VARCHAR(180),
       message TEXT NOT NULL,
       status VARCHAR(20) NOT NULL DEFAULT 'New',
+      admin_reply TEXT,
+      replied_at TIMESTAMP,
+      resolved_at TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);

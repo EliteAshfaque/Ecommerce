@@ -1,11 +1,11 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { Activity, BadgePercent, Box, ExternalLink, LayoutDashboard, LogOut, Menu, Package, PanelsTopLeft, ShoppingBag, Sparkles, Users, X } from "lucide-react";
+import { Activity, BadgePercent, ExternalLink, Headphones, LayoutDashboard, LogOut, Menu, Package, PanelsTopLeft, RotateCcw, ShoppingBag, Sparkles, Users, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 import { logout } from "../store/slices/authSlice";
 
 const STORE_URL = import.meta.env.VITE_STORE_URL || "http://localhost:5173";
-const primaryLinks = [{ to: "/", end: true, label: "Overview", icon: LayoutDashboard }, { to: "/orders", label: "Orders", icon: ShoppingBag }, { to: "/products", label: "Products", icon: Package }, { to: "/users", label: "Customers", icon: Users }];
+const primaryLinks = [{ to: "/", end: true, label: "Overview", icon: LayoutDashboard }, { to: "/orders", label: "Orders", icon: ShoppingBag }, { to: "/returns", label: "Returns", icon: RotateCcw }, { to: "/support", label: "Support", icon: Headphones }, { to: "/products", label: "Products", icon: Package }, { to: "/users", label: "Customers", icon: Users }];
 const contentLinks = [{ to: "/storefront", label: "Storefront", icon: PanelsTopLeft }, { to: "/sales", label: "Promotions", icon: BadgePercent }];
 
 const SideLink = ({ link, close }) => { const Icon = link.icon; return <NavLink end={link.end} to={link.to} onClick={close} className={({ isActive }) => `group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${isActive ? "bg-white/12 text-white shadow-[inset_0_1px_0_rgba(255,255,255,.12)]" : "text-white/55 hover:bg-white/[.07] hover:text-white"}`}><Icon className="h-[18px] w-[18px]" />{link.label}</NavLink>; };

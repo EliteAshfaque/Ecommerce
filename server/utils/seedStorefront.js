@@ -11,24 +11,39 @@ const categories = [
   ["Kitchen", "kitchen", "A better table starts here.", "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=900&q=80", 6],
   ["Accessories", "accessories", "Small details with lasting impact.", "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80", 7],
   ["Books", "books", "Ideas worth keeping close.", "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=900&q=80", 8],
+  ["Mobiles & Accessories", "mobiles-accessories", "Phones, charging and the everyday tech around them.", "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=900&q=80", 9],
+  ["Laptops & Computing", "laptops-computing", "Focused tools for work, study and creating.", "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=900&q=80", 10],
+  ["Home Appliances", "home-appliances", "Quietly capable helpers for the home.", "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=900&q=80", 11],
+  ["Grocery & Pantry", "grocery-pantry", "Useful cupboard staples and thoughtful treats.", "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=80", 12],
+  ["Baby & Kids", "baby-kids", "Practical essentials for small everyday adventures.", "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=900&q=80", 13],
+  ["Toys & Gaming", "toys-gaming", "Play, build and switch off beautifully.", "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=900&q=80", 14],
+  ["Fragrance", "fragrance", "Scent for spaces, rituals and memorable arrivals.", "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=900&q=80", 15],
+  ["Health & Nutrition", "health-nutrition", "Wellness essentials for a steadier routine.", "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=900&q=80", 16],
+  ["Automotive", "automotive", "Practical pieces for life on the road.", "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80", 17],
+  ["Stationery & Office", "stationery-office", "Small systems for clearer, calmer workdays.", "https://images.unsplash.com/photo-1456324504439-367cee3b3c32?auto=format&fit=crop&w=900&q=80", 18],
 ];
 
 const banners = [
   ["The UAE edit · 2026", "Make the everyday feel considered.", "A curated market of useful objects, rare details and new-season finds — delivered across the Emirates.", "/images/lumera-hero-editorial-v1.png", "Explore the edit", "/products", 1],
   ["New season · Fashion", "Soft structure. Strong point of view.", "Layers, leather and the finishing pieces that take you from work to weekend.", "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=2000&q=80", "Shop fashion", "/products?category=Fashion", 2],
   ["Home stories · LUMERA", "Objects with a sense of place.", "Design-led furniture, warm light and beautiful table pieces for the rooms you return to.", "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=2000&q=80", "Shop home", "/products?category=Home%20%26%20Garden", 3],
+  ["Everyday technology", "Work, play, stay connected.", "Thoughtful devices, useful accessories and desk-ready essentials for the way the Emirates moves.", "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=2000&q=80", "Explore technology", "/products?category=Electronics", 4],
+  ["The weekend market", "A little more room to enjoy it.", "Grocery finds, outdoor favourites and small rituals for a beautifully unplanned Friday.", "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=2000&q=80", "Shop the market", "/products?category=Grocery%20%26%20Pantry", 5],
 ];
 
 const offers = [
   ["A new welcome", "10% off your first considered find", "Use WELCOME10 at checkout on orders over AED 150.", "WELCOME10", "Shop the welcome edit", "/products", "violet", 1],
   ["Home, delivered", "Complimentary standard delivery over AED 250", "Choose your Emirate at checkout. Dubai and every Emirate are covered.", null, "Explore home", "/products?category=Home%20%26%20Garden", "sand", 2],
   ["Members' edit", "Save the pieces you want to keep close", "Heart any find to build a private, always-synced LUMERA collection.", null, "View favourites", "/favourites", "rose", 3],
+  ["Weekend delivery", "Free delivery starts at AED 250", "Add a little more to your edit and standard UAE delivery is on us.", null, "Build your bag", "/products", "sand", 4],
+  ["New departments", "More of the useful things", "From pantry staples to desk tools, discover new everyday departments.", null, "Browse departments", "/products", "violet", 5],
 ];
 
 const news = [
   ["Journal · New in", "The objects that make a slower morning", "Stoneware, quiet lighting and the simple tools that make daily rituals feel better.", "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80", "Explore kitchen", "/products?category=Kitchen", 1],
   ["UAE delivery", "Your LUMERA order, across the Emirates", "Select Standard or Express delivery at checkout, with transparent AED pricing before you pay.", "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1200&q=80", "Start shopping", "/products", 2],
   ["The private edit", "Save now. Decide beautifully later.", "Your favourites are private to your account and ready whenever you are.", "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=1200&q=80", "Open favourites", "/favourites", 3],
+  ["Desk edit", "A clearer workday starts with better tools", "Quiet peripherals, paper goods and small desk systems chosen for focused, everyday work.", "https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1200&q=80", "Explore office", "/products?category=Stationery%20%26%20Office", 4],
 ];
 
 async function seedStorefront() {

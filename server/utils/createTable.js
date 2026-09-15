@@ -10,6 +10,7 @@ import { createWishlistItemsTable } from "../models/wishlistItemTable.js";
 import { createPromotionsTable } from "../models/promotionTable.js";
 import { createStorefrontTables } from "../models/storefrontTable.js";
 import { createUserAddressesTable } from "../models/userAddressTable.js";
+import { createReturnsTables } from "../models/returnsTable.js";
 
 export const createTables = async () => {
   try {
@@ -36,12 +37,18 @@ export const createTables = async () => {
     await createUserAddressesTable();
     await createPromotionsTable();
     await createStorefrontTables();
+    await createReturnsTables();
 
     // Backward-compatible upgrades for databases created before UAE checkout.
     await database.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_price DECIMAL(10,2) NOT NULL DEFAULT 0");
     await database.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS promotion_code VARCHAR(50)");
     await database.query("ALTER TABLE shipping_info ADD COLUMN IF NOT EXISTS emirate VARCHAR(100)");
     await database.query("ALTER TABLE shipping_info ADD COLUMN IF NOT EXISTS delivery_type VARCHAR(20)");
+    // Optional catalogue merchandising values power truthful sale pricing and product badges.
+    await database.query("ALTER TABLE products ADD COLUMN IF NOT EXISTS compare_at_price DECIMAL(10,2)");
+    await database.query("ALTER TABLE products ADD COLUMN IF NOT EXISTS badge VARCHAR(40)");
+    await database.query("ALTER TABLE products DROP CONSTRAINT IF EXISTS products_compare_at_price_check");
+    await database.query("ALTER TABLE products ADD CONSTRAINT products_compare_at_price_check CHECK (compare_at_price IS NULL OR compare_at_price >= price)");
     // Refund fields preserve the Stripe refund record beside the original payment.
     await database.query("ALTER TABLE payments ADD COLUMN IF NOT EXISTS refund_id VARCHAR(255) UNIQUE");
     await database.query("ALTER TABLE payments ADD COLUMN IF NOT EXISTS refund_status VARCHAR(20) NOT NULL DEFAULT 'None'");
@@ -50,6 +57,11 @@ export const createTables = async () => {
     await database.query("ALTER TABLE payments ADD COLUMN IF NOT EXISTS refunded_at TIMESTAMP");
     await database.query("ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_refund_status_check");
     await database.query("ALTER TABLE payments ADD CONSTRAINT payments_refund_status_check CHECK (refund_status IN ('None', 'Pending', 'Succeeded', 'Failed'))");
+    // Existing contact tables need these columns before the admin inbox can reply.
+    await database.query("ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS admin_reply TEXT");
+    await database.query("ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS replied_at TIMESTAMP");
+    await database.query("ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMP");
+    await database.query("ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
 
     console.log("All Tables Created Successfully.");
   } catch (error) {

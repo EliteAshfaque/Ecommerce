@@ -5,6 +5,8 @@ const empty = {
   name: "",
   description: "",
   price: "",
+  compare_at_price: "",
+  badge: "",
   category: "Electronics",
   stock: "",
 };
@@ -17,6 +19,8 @@ const ProductForm = ({ initial, onSubmit, onCancel, saving }) => {
     ...empty,
     ...initial,
     price: initial?.price ?? "",
+    compare_at_price: initial?.compare_at_price ?? "",
+    badge: initial?.badge ?? "",
     stock: initial?.stock ?? "",
   });
   const [images, setImages] = useState(null);
@@ -32,6 +36,8 @@ const ProductForm = ({ initial, onSubmit, onCancel, saving }) => {
     data.append("name", form.name.trim());
     data.append("description", form.description.trim());
     data.append("price", form.price);
+    data.append("compare_at_price", form.compare_at_price);
+    data.append("badge", form.badge);
     data.append("category", form.category);
     data.append("stock", form.stock);
     if (images?.length) {
@@ -90,6 +96,27 @@ const ProductForm = ({ initial, onSubmit, onCancel, saving }) => {
             required
             className={field}
           />
+        </div>
+        <div>
+          <label className="text-[10px] uppercase tracking-[0.16em] text-stone">
+            Original price <span className="normal-case tracking-normal">(optional)</span>
+          </label>
+          <input
+            name="compare_at_price"
+            type="number"
+            min="0"
+            step="0.01"
+            value={form.compare_at_price}
+            onChange={change}
+            placeholder="Higher than selling price"
+            className={field}
+          />
+        </div>
+        <div>
+          <label className="text-[10px] uppercase tracking-[0.16em] text-stone">
+            Product badge <span className="normal-case tracking-normal">(optional)</span>
+          </label>
+          <input name="badge" value={form.badge} onChange={change} placeholder="Best seller" className={field} />
         </div>
         <div>
           <label className="text-[10px] uppercase tracking-[0.16em] text-stone">

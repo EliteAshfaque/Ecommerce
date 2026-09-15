@@ -7,6 +7,16 @@ export const categories = [
   { id: 6, name: "Kitchen" },
   { id: 7, name: "Accessories" },
   { id: 8, name: "Books" },
+  { id: 9, name: "Mobiles & Accessories" },
+  { id: 10, name: "Laptops & Computing" },
+  { id: 11, name: "Home Appliances" },
+  { id: 12, name: "Grocery & Pantry" },
+  { id: 13, name: "Baby & Kids" },
+  { id: 14, name: "Toys & Gaming" },
+  { id: 15, name: "Fragrance" },
+  { id: 16, name: "Health & Nutrition" },
+  { id: 17, name: "Automotive" },
+  { id: 18, name: "Stationery & Office" },
 ];
 
 export const getProductImage = (product, index = 0) => {

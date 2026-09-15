@@ -475,6 +475,41 @@ const products = [
     stock: 44,
     images: [{ public_id: "seed/foldable-mat", url: "https://images.unsplash.com/photo-1592432678016-e910b452f9a2?auto=format&fit=crop&w=1200&q=80" }],
   },
+  // Marketplace expansion: each new storefront department has useful, searchable products.
+  { name: "Nova 5G Everyday Phone", description: "A refined 6.4-inch 5G smartphone with a bright display, all-day battery and a versatile dual-camera system.", price: 1199.0, category: "Mobiles & Accessories", ratings: 4.6, stock: 24, images: [{ public_id: "seed/nova-5g-phone", url: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Pocket Power Bank 20K", description: "A slim 20,000mAh USB-C power bank with dual-device charging for long commutes, travel days and weekends away.", price: 149.0, category: "Mobiles & Accessories", ratings: 4.5, stock: 68, images: [{ public_id: "seed/pocket-power-bank", url: "https://images.unsplash.com/photo-1609592424824-11d16b53b5c1?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Atlas 14 Workday Laptop", description: "A lightweight 14-inch laptop with a crisp display, 16GB memory and fast storage for study, work and everyday creating.", price: 3299.0, category: "Laptops & Computing", ratings: 4.7, stock: 14, images: [{ public_id: "seed/atlas-laptop", url: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Contour Silent Mouse", description: "An ergonomic wireless mouse with quiet clicks, adjustable tracking and a soft-touch finish for focused desk hours.", price: 119.0, category: "Laptops & Computing", ratings: 4.5, stock: 71, images: [{ public_id: "seed/contour-mouse", url: "https://images.unsplash.com/photo-1527814050087-3793815479db?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Breeze HEPA Air Purifier", description: "A compact room air purifier with a washable pre-filter, HEPA filtration and a low-noise sleep setting.", price: 529.0, category: "Home Appliances", ratings: 4.6, stock: 19, images: [{ public_id: "seed/breeze-air-purifier", url: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Morning Drip Coffee Maker", description: "A simple programmable coffee maker with a thermal carafe and a compact counter-friendly footprint.", price: 289.0, category: "Home Appliances", ratings: 4.4, stock: 31, images: [{ public_id: "seed/morning-coffee-maker", url: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Emirati Morning Coffee Blend", description: "A balanced medium-roast whole-bean blend with gentle cocoa notes, packed fresh for a slower morning ritual.", price: 46.0, category: "Grocery & Pantry", ratings: 4.7, stock: 86, images: [{ public_id: "seed/emirati-coffee", url: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Mediterranean Pantry Set", description: "A useful pantry trio of extra-virgin olive oil, sea salt and aromatic herbs for quick, generous cooking.", price: 68.0, category: "Grocery & Pantry", ratings: 4.5, stock: 52, images: [{ public_id: "seed/pantry-set", url: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Cloud Cotton Baby Sleep Set", description: "A soft two-piece cotton sleep set with gentle stretch and easy-change snaps for everyday comfort.", price: 89.0, category: "Baby & Kids", ratings: 4.7, stock: 43, images: [{ public_id: "seed/baby-sleep-set", url: "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Little Explorer Balance Bike", description: "A lightweight first balance bike with an adjustable saddle and puncture-resistant tyres for confident early rides.", price: 329.0, category: "Baby & Kids", ratings: 4.6, stock: 16, images: [{ public_id: "seed/balance-bike", url: "https://images.unsplash.com/photo-1502744688674-c619d1586c9e?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "City Builder 420-Piece Set", description: "An open-ended building set with colourful pieces, wheels and idea cards for imaginative afternoon projects.", price: 129.0, category: "Toys & Gaming", ratings: 4.6, stock: 39, images: [{ public_id: "seed/city-builder", url: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Arcade Wireless Controller", description: "A responsive wireless controller with textured grips, rechargeable battery and multi-platform Bluetooth pairing.", price: 219.0, category: "Toys & Gaming", ratings: 4.5, stock: 29, images: [{ public_id: "seed/arcade-controller", url: "https://images.unsplash.com/photo-1603481546579-65d935ba9cdd?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Desert Oud Eau de Parfum", description: "A warm unisex fragrance with saffron, smooth oud and amber, presented in a considered 75ml glass bottle.", price: 245.0, category: "Fragrance", ratings: 4.8, stock: 35, images: [{ public_id: "seed/desert-oud", url: "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Citrus Linen Home Mist", description: "A bright citrus and white-tea room mist that refreshes linens, entryways and slow weekend mornings.", price: 74.0, category: "Fragrance", ratings: 4.4, stock: 58, images: [{ public_id: "seed/citrus-home-mist", url: "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Daily Electrolyte Sachets", description: "A lightly flavoured electrolyte drink mix in easy single-serve sachets for hydration after movement or long days.", price: 82.0, category: "Health & Nutrition", ratings: 4.5, stock: 77, images: [{ public_id: "seed/electrolyte-sachets", url: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Insulated Protein Shaker", description: "A leak-resistant stainless steel shaker with an internal mixing screen and a comfortable carry loop.", price: 69.0, category: "Health & Nutrition", ratings: 4.3, stock: 64, images: [{ public_id: "seed/protein-shaker", url: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Roadside Ready Kit", description: "A compact vehicle kit with reflective triangle, jump leads, torch and practical essentials for peace of mind.", price: 159.0, category: "Automotive", ratings: 4.6, stock: 33, images: [{ public_id: "seed/roadside-kit", url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Car Care Microfibre Set", description: "A six-piece soft microfibre set for glass, paintwork and cabin surfaces, packed in a reusable pouch.", price: 48.0, category: "Automotive", ratings: 4.4, stock: 72, images: [{ public_id: "seed/car-care-set", url: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Weekday Undated Planner", description: "An undated hardback planner with weekly planning spreads, project pages and a lay-flat binding for clear routines.", price: 64.0, category: "Stationery & Office", ratings: 4.7, stock: 55, images: [{ public_id: "seed/weekday-planner", url: "https://images.unsplash.com/photo-1456324504439-367cee3b3c32?auto=format&fit=crop&w=1200&q=80" }] },
+  { name: "Walnut Desk Organiser", description: "A modular wood desk organiser with trays for notes, cables and small essentials, designed to bring visual calm.", price: 138.0, category: "Stationery & Office", ratings: 4.6, stock: 26, images: [{ public_id: "seed/walnut-desk-organiser", url: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1200&q=80" }] },
+];
+
+// Truthful sale labels are stored with the catalogue, so every client and admin view agrees on the price.
+const merchandising = [
+  ["Clarity DSLR Lens Kit", 699, "Best seller"],
+  ["Oak Lounge Chair", 820, "Most loved"],
+  ["Carbon Road Bike", 2290, "Limited drop"],
+  ["The Design of Living", 156, "Top rated"],
+  ["Halo Compact Projector", 849, "Weekend deal"],
+  ["Nova 5G Everyday Phone", 1399, "Launch deal"],
+  ["Atlas 14 Workday Laptop", 3699, "New arrival"],
+  ["Breeze HEPA Air Purifier", 649, "Member price"],
+  ["Desert Oud Eau de Parfum", 320, "Best seller"],
+  ["Roadside Ready Kit", 199, "Travel essential"],
 ];
 
 async function seedProducts() {
@@ -520,6 +555,14 @@ async function seedProducts() {
 
       inserted += 1;
       console.log(`Inserted: ${product.name} (${product.category})`);
+    }
+
+    // Keep merchandising idempotent: repeat seed runs update the same live product values.
+    for (const [name, compareAtPrice, badge] of merchandising) {
+      await database.query(
+        "UPDATE products SET compare_at_price = $1, badge = $2 WHERE name = $3",
+        [compareAtPrice, badge, name]
+      );
     }
 
     const count = await database.query("SELECT COUNT(*) FROM products");

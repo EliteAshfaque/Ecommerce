@@ -6,7 +6,7 @@ import { emitCatalogueChange } from "../realtime/socket.js";
 import { getAIRecommendation } from "../utils/getAIRecommondation.js";
 
 export const createProduct = catchAsyncErrors(async (req, res, next) => {
-  const { name, description, price, category, stock } = req.body;
+  const { name, description, price, compare_at_price, badge, category, stock } = req.body;
 
   if (!name || !description || price === undefined || !category || stock === undefined) {
     return next(new ErrorHandler("Please provide all required fields.", 400));
@@ -14,6 +14,10 @@ export const createProduct = catchAsyncErrors(async (req, res, next) => {
 
   if (!Number.isFinite(Number(price)) || Number(price) < 0 || !Number.isInteger(Number(stock)) || Number(stock) < 0) {
     return next(new ErrorHandler("Price must be non-negative and stock must be a whole non-negative number.", 400));
+  }
+  const compareAtPrice = compare_at_price === undefined || compare_at_price === "" ? null : Number(compare_at_price);
+  if (compareAtPrice !== null && (!Number.isFinite(compareAtPrice) || compareAtPrice < Number(price))) {
+    return next(new ErrorHandler("Compare-at price must be greater than or equal to the selling price.", 400));
   }
 
   let images = [];
@@ -36,13 +40,15 @@ export const createProduct = catchAsyncErrors(async (req, res, next) => {
   }
 
   const product = await database.query(
-    `INSERT INTO products (name, description, price, category, stock, images, created_by)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `INSERT INTO products (name, description, price, compare_at_price, badge, category, stock, images, created_by)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      RETURNING *`,
     [
       name,
       description,
       price,
+      compareAtPrice,
+      badge?.trim() || null,
       category,
       stock,
       JSON.stringify(images),
@@ -199,7 +205,7 @@ export const fetchAllProducts = catchAsyncErrors(async (req, res, next) => {
 
 export const updateProduct = catchAsyncErrors(async (req, res, next) => {
   const { productId } = req.params;
-  const { name, description, price, category, stock } = req.body;
+  const { name, description, price, compare_at_price, badge, category, stock } = req.body;
 
   if (!name || !description || price === undefined || !category || stock === undefined) {
     return next(
@@ -209,6 +215,10 @@ export const updateProduct = catchAsyncErrors(async (req, res, next) => {
 
   if (!Number.isFinite(Number(price)) || Number(price) < 0 || !Number.isInteger(Number(stock)) || Number(stock) < 0) {
     return next(new ErrorHandler("Price must be non-negative and stock must be a whole non-negative number.", 400));
+  }
+  const compareAtPrice = compare_at_price === undefined || compare_at_price === "" ? null : Number(compare_at_price);
+  if (compareAtPrice !== null && (!Number.isFinite(compareAtPrice) || compareAtPrice < Number(price))) {
+    return next(new ErrorHandler("Compare-at price must be greater than or equal to the selling price.", 400));
   }
 
   // 1. Check if the product exists
@@ -237,8 +247,8 @@ export const updateProduct = catchAsyncErrors(async (req, res, next) => {
 
   // 2. Update fields and optionally replace the image collection.
   const result = await database.query(
-    `UPDATE products SET name = $1, description = $2, price = $3, category = $4, stock = $5, images = $6 WHERE id = $7 RETURNING *`,
-    [name, description, price, category, stock, JSON.stringify(images), productId]
+    `UPDATE products SET name = $1, description = $2, price = $3, compare_at_price = $4, badge = $5, category = $6, stock = $7, images = $8 WHERE id = $9 RETURNING *`,
+    [name, description, price, compareAtPrice, badge?.trim() || null, category, stock, JSON.stringify(images), productId]
   );
 
   // 3. Send the response (Completed the cut-off part)

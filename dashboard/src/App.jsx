@@ -11,6 +11,8 @@ import Users from "./pages/Users";
 import Login from "./pages/Login";
 import Sales from "./pages/Sales";
 import Storefront from "./pages/Storefront";
+import Support from "./pages/Support";
+import Returns from "./pages/Returns";
 import LiveUpdates from "./components/LiveUpdates";
 
 function AuthLoader() {
@@ -52,6 +54,8 @@ function App() {
             <Route path="users" element={<Users />} />
             <Route path="sales" element={<Sales />} />
             <Route path="storefront" element={<Storefront />} />
+            <Route path="support" element={<Support />} />
+            <Route path="returns" element={<Returns />} />
           </Route>
         </Route>
 

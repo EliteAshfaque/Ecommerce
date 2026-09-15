@@ -14,6 +14,7 @@ import promotionRoutes from "./router/promotionRoutes.js";
 import storefrontRoutes from "./router/storefrontRoutes.js";
 import addressRoutes from "./router/addressRoutes.js";
 import storefrontAdminRoutes from "./router/storefrontAdminRoutes.js";
+import supportRoutes from "./router/supportRoutes.js";
 const app = express();
 
 // Vite may choose the next local port when 5173/5174 are busy. This is
@@ -70,6 +71,7 @@ app.use("/api/v1/promotion", promotionRoutes);
 app.use("/api/v1/storefront", storefrontRoutes);
 app.use("/api/v1/address", addressRoutes);
 app.use("/api/v1/admin/storefront", storefrontAdminRoutes);
+app.use("/api/v1/admin/support", supportRoutes);
 // Error middleware must be last so it receives errors from every route.
 app.use(errorMiddleware);
 

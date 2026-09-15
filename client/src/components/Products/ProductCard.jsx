@@ -55,6 +55,10 @@ const ProductCard = ({ product, layout = "slider" }) => {
     style: "currency",
     currency: "AED",
   });
+  // Database compare-at prices make the savings badge truthful rather than decorative.
+  const compareAt = Number(product.compare_at_price || 0);
+  const hasSaving = compareAt > Number(product.price || 0);
+  const savingPercent = hasSaving ? Math.round((1 - Number(product.price) / compareAt) * 100) : 0;
   const inStock = Number(product.stock) > 0;
   const rating = Number(product.ratings || 0);
   const reviewCount = Number(product.review_count || 0);
@@ -86,7 +90,7 @@ const ProductCard = ({ product, layout = "slider" }) => {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
-      <div className="glass-card relative aspect-[4/5] overflow-hidden rounded-3xl bg-mist">
+      <div className="market-product-card relative aspect-[4/5] overflow-hidden rounded-3xl bg-white">
         <Link to={`/product/${product.id}`} className="absolute inset-0" aria-label={`View ${product.name}`}>
           <img
             src={hover ? secondary : primary}
@@ -95,8 +99,8 @@ const ProductCard = ({ product, layout = "slider" }) => {
             className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]"
           />
         </Link>
-          <span className="absolute left-3 top-3 rounded-full border border-white/30 bg-white/65 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-ink backdrop-blur-md">
-            {inStock ? "In stock" : "Sold out"}
+          <span className={`absolute left-3 top-3 rounded-full border px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] backdrop-blur-md ${hasSaving ? "border-amber-200 bg-amber-100/90 text-amber-900" : "border-white/30 bg-white/65 text-ink"}`}>
+            {!inStock ? "Sold out" : product.badge || (hasSaving ? `${savingPercent}% off` : "In stock")}
           </span>
           <button
             type="button"
@@ -129,7 +133,7 @@ const ProductCard = ({ product, layout = "slider" }) => {
             </div>
             <ArrowUpRight className="mt-1 h-4 w-4 shrink-0 text-stone transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" />
           </div>
-          <p className="mt-2 text-base font-bold tabular-nums text-ink">{price}</p>
+          <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1"><p className="text-base font-bold tabular-nums text-ink">{price}</p>{hasSaving && <><span className="text-xs tabular-nums text-stone line-through">{compareAt.toLocaleString("en-AE", { style: "currency", currency: "AED" })}</span><span className="text-[10px] font-bold uppercase tracking-[.08em] text-emerald-700">Save {savingPercent}%</span></>}</div>
           <div className="mt-2 flex items-center gap-1.5 text-xs text-stone">
             {rating > 0 ? <><Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /><span className="font-semibold text-ink">{rating.toFixed(1)}</span><span>{reviewCount ? `(${reviewCount.toLocaleString()})` : "verified rating"}</span></> : <span>New to LUMERA</span>}
           </div>

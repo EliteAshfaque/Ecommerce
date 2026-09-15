@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Package, ChevronDown, ShoppingBag, Star } from "lucide-react";
+import { Package, ChevronDown, ShoppingBag, Star, RotateCcw } from "lucide-react";
+import { toast } from "react-toastify";
+import axiosInstance from "../lib/axios";
 import { fetchMyOrders } from "../store/slices/orderSlice";
 import { toggleAuthPopup } from "../store/slices/popupSlice";
 
@@ -30,12 +32,38 @@ const formatDate = (value) => {
   });
 };
 
-const OrderCard = ({ order }) => {
+const returnReasons = ["Changed my mind", "Damaged or defective", "Wrong item received", "Not as described", "Other"];
+
+const ReturnRequestForm = ({ order, items, onSubmitted }) => {
+  const [reason, setReason] = useState(returnReasons[0]);
+  const [note, setNote] = useState("");
+  const [selected, setSelected] = useState(() => items.map((item) => ({ order_item_id: item.order_item_id, quantity: Number(item.quantity || 1) })));
+  const [saving, setSaving] = useState(false);
+  const submit = async (event) => {
+    event.preventDefault();
+    const payloadItems = selected.filter((item) => Number(item.quantity) > 0).map((item) => ({ ...item, quantity: Number(item.quantity) }));
+    if (!payloadItems.length) return toast.error("Select at least one item to return.");
+    setSaving(true);
+    try {
+      const { data } = await axiosInstance.post(`/order/${order.id}/returns`, { reason, customer_note: note, items: payloadItems });
+      toast.success(data.message);
+      onSubmitted();
+    } catch (error) { toast.error(error.response?.data?.message || "Could not submit the return request."); }
+    finally { setSaving(false); }
+  };
+  const setQuantity = (item, value) => setSelected((current) => current.map((row) => row.order_item_id === item.order_item_id ? { ...row, quantity: Math.max(0, Math.min(Number(item.quantity || 1), Number(value) || 0)) } : row));
+  return <form onSubmit={submit} className="rounded-2xl border border-primary/15 bg-primary/[.035] p-4"><p className="text-[10px] font-bold uppercase tracking-[.16em] text-primary">Start a return</p><p className="mt-2 text-sm text-stone">Choose the delivered items and tell us what happened. A LUMERA team member will review your request.</p><div className="mt-4 space-y-3">{items.map((item) => <div key={item.order_item_id} className="flex items-center justify-between gap-3 rounded-xl bg-white/75 px-3 py-2.5"><p className="line-clamp-1 text-sm font-medium">{item.title || "Order item"}</p><label className="flex items-center gap-2 text-xs text-stone">Qty <input type="number" min="0" max={item.quantity} value={selected.find((row) => row.order_item_id === item.order_item_id)?.quantity ?? 0} onChange={(event) => setQuantity(item, event.target.value)} className="w-14 rounded-lg border border-border/15 bg-white px-2 py-1 text-center outline-none focus:border-primary" /></label></div>)}</div><div className="mt-4 grid gap-3 sm:grid-cols-2"><select value={reason} onChange={(event) => setReason(event.target.value)} className="rounded-xl border border-border/15 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary">{returnReasons.map((option) => <option key={option}>{option}</option>)}</select><input value={note} onChange={(event) => setNote(event.target.value)} maxLength="1500" placeholder="Optional note" className="rounded-xl border border-border/15 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary" /></div><button disabled={saving} className="mt-4 rounded-xl bg-ink px-4 py-2.5 text-[10px] font-bold uppercase tracking-[.13em] text-white transition hover:bg-primary">{saving ? "Submitting…" : "Submit return request"}</button></form>;
+};
+
+const OrderCard = ({ order, returns, onReturnSubmitted }) => {
   const [open, setOpen] = useState(false);
+  const [returnOpen, setReturnOpen] = useState(false);
   const items = Array.isArray(order.order_items) ? order.order_items : [];
   const shipping = order.shipping_info || {};
   const shortId = String(order.id || "").slice(0, 8).toUpperCase();
   const canReview = order.payment_status === "Paid" && order.order_status !== "Cancelled";
+  const canReturn = order.payment_status === "Paid" && order.order_status === "Delivered";
+  const activeReturns = returns || [];
 
   return (
     <article className="border-b border-border/10 py-8">
@@ -226,6 +254,8 @@ const OrderCard = ({ order }) => {
               </div>
             </div>
           </div>
+          {activeReturns.length > 0 && <div className="rounded-2xl border border-border/10 bg-mist/55 p-4"><p className="text-[10px] font-bold uppercase tracking-[.16em] text-stone">Return requests</p><div className="mt-3 space-y-2">{activeReturns.map((request) => <p key={request.id} className="text-sm text-ink/75"><span className="font-medium">{request.status}</span> · {request.reason} · requested {formatDate(request.requested_at)}</p>)}</div></div>}
+          {canReturn && !activeReturns.some((request) => ["Requested", "Approved", "Received"].includes(request.status)) && (returnOpen ? <ReturnRequestForm order={order} items={items} onSubmitted={() => { setReturnOpen(false); onReturnSubmitted(); }} /> : <button type="button" onClick={() => setReturnOpen(true)} className="inline-flex w-fit items-center gap-2 rounded-xl border border-primary/20 bg-primary/[.05] px-4 py-2.5 text-[10px] font-bold uppercase tracking-[.13em] text-primary transition hover:bg-primary hover:text-white"><RotateCcw className="h-3.5 w-3.5" />Start a return</button>)}
         </div>
       )}
     </article>
@@ -237,10 +267,26 @@ const Orders = () => {
   const { authUser } = useSelector((state) => state.auth);
   const { myOrders, fetchingOrders, error } = useSelector((state) => state.order);
   const [tab, setTab] = useState("All");
+  const [returns, setReturns] = useState([]);
+
+  const loadReturns = async () => {
+    try {
+      const { data } = await axiosInstance.get("/order/returns/me");
+      setReturns(data.returns || []);
+    } catch (requestError) {
+      // The order history stays usable even if the optional returns service is unavailable.
+      console.error("Could not load returns", requestError);
+    }
+  };
 
   useEffect(() => {
-    if (authUser) dispatch(fetchMyOrders());
+    if (authUser) {
+      dispatch(fetchMyOrders());
+      loadReturns();
+    }
   }, [authUser, dispatch]);
+
+  const returnsByOrder = useMemo(() => returns.reduce((all, request) => ({ ...all, [request.order_id]: [...(all[request.order_id] || []), request] }), {}), [returns]);
 
   const filtered = useMemo(() => {
     const list = Array.isArray(myOrders) ? [...myOrders] : [];
@@ -364,7 +410,7 @@ const Orders = () => {
         ) : (
           <div>
             {filtered.map((order) => (
-              <OrderCard key={order.id} order={order} />
+              <OrderCard key={order.id} order={order} returns={returnsByOrder[order.id]} onReturnSubmitted={loadReturns} />
             ))}
           </div>
         )}
