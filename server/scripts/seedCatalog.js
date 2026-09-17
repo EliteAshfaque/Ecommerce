@@ -145,8 +145,7 @@ export const seedCatalog = async () => {
       );
     }
 
-    for (const product of products) {
-      const category = titleCase(product.category);
+    const productRows = products.map((product) => {
       const sourceKey = `dummyjson-${product.id}`;
       const images = [...new Set([product.thumbnail, ...(product.images || [])])]
         .filter(Boolean)
@@ -156,29 +155,37 @@ export const seedCatalog = async () => {
       const discount = Number(product.discountPercentage || 0);
       const compareAtPrice = discount > 0 ? Number((price / (1 - discount / 100)).toFixed(2)) : null;
       const sourceMarker = `[Catalogue source: DummyJSON #${product.id}]`;
-      const description = `${product.description}${product.brand ? ` Brand: ${product.brand}.` : ""} ${sourceMarker}`;
-
-      await database.query(
-        `INSERT INTO products (name, description, price, compare_at_price, badge, category, ratings, images, stock, created_by)
-         SELECT $1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10
-         WHERE NOT EXISTS (
-           SELECT 1 FROM products WHERE description LIKE $11
-         )`,
-        [
-          product.title,
-          description,
-          price,
-          compareAtPrice,
-          discount >= 15 ? "Sale" : "New",
-          category,
-          Math.min(5, Number(product.rating || 0)),
-          JSON.stringify(images),
-          Math.max(0, Math.trunc(Number(product.stock || 0))),
-          adminId,
-          `%${sourceMarker}%`,
-        ]
-      );
-    }
+      return [
+        product.title,
+        `${product.description}${product.brand ? ` Brand: ${product.brand}.` : ""} ${sourceMarker}`,
+        price,
+        compareAtPrice,
+        discount >= 15 ? "Sale" : "New",
+        titleCase(product.category),
+        Math.min(5, Number(product.rating || 0)),
+        JSON.stringify(images),
+        Math.max(0, Math.trunc(Number(product.stock || 0))),
+        adminId,
+        `%${sourceMarker}%`,
+      ];
+    });
+    const productValues = productRows.flat();
+    const productPlaceholders = productRows
+      .map((_, row) => {
+        const index = row * 11;
+        return `($${index + 1}, $${index + 2}, $${index + 3}::numeric, $${index + 4}::numeric, $${index + 5}, $${index + 6}, $${index + 7}::numeric, $${index + 8}::jsonb, $${index + 9}::int, $${index + 10}::uuid, $${index + 11})`;
+      })
+      .join(", ");
+    await database.query(
+      `WITH seed (name, description, price, compare_at_price, badge, category, ratings, images, stock, created_by, source_marker) AS (
+        VALUES ${productPlaceholders}
+      )
+      INSERT INTO products (name, description, price, compare_at_price, badge, category, ratings, images, stock, created_by)
+      SELECT name, description, price, compare_at_price, badge, category, ratings, images, stock, created_by
+      FROM seed
+      WHERE NOT EXISTS (SELECT 1 FROM products WHERE products.description LIKE seed.source_marker)`,
+      productValues
+    );
     await seedStorefrontContent();
     await database.query("COMMIT");
     console.log(`Seeded ${products.length} products across ${categories.size} categories.`);
