@@ -45,7 +45,7 @@ Product card -> Redux cart -> Payment page -> POST /order/new
 The server, not the browser, is the source of truth for product prices, stock, discounts, order payment state, roles, and permissions. This is essential: a user can edit browser data, but cannot be trusted to decide a payment amount or whether they are an admin.
 
 ---
-
+ b. 
 ## 2. React fundamentals used in this project
 
 ### 2.1 What React is

@@ -594,6 +594,57 @@ function useDebouncedValue(value, delay = 300) {
 
 Lumera’s `useTheme()` is a custom Hook that makes Theme Context easy/safe for components to read.
 
+### Advanced React APIs: know what they are
+
+Lumera uses the core Hooks above. The following React APIs are not currently used in the project, but are useful to know for interviews. Do not force them into an application just because they exist.
+
+| API | Simple purpose | When to use it | Lumera status |
+|---|---|---|---|
+| `useReducer` | manages related/complex local state with a reducer function | complex form, wizard, or local state machine with many related transitions | not used; Redux reducers already manage global workflows |
+| `useId` | creates stable IDs for accessibility relationships | `label` + input/error `aria-describedby` IDs | not used; useful for reusable form fields |
+| `useLayoutEffect` | runs after DOM update but before browser paint | measure/position DOM where a visible flicker must be avoided | not used; prefer normal `useEffect` unless layout measurement truly needs it |
+| `useImperativeHandle` | limits which imperative methods a parent gets through a ref | reusable input/modal exposing `focus()`/`open()` rather than all DOM details | not used; advanced component-library case |
+| `useTransition` | marks a non-urgent update so typing/clicking stays responsive | expensive tab/list/chart update that should not block an input | not used; it does not replace API loading state |
+| `useDeferredValue` | lets an expensive consumer lag slightly behind an urgent value | search text stays instant while a heavy results view catches up | not used; often paired with large client-side filtering |
+| `useOptimistic` | temporarily shows a successful-looking update before server confirms it | like button, comment, small reversible save | not used; must handle failure/rollback |
+| `useActionState` | manages state/pending result around an Action/form action | modern form/action workflows | not used; Lumera uses controlled forms and thunks |
+| `use` | reads a Promise/Context in a Suspense-enabled architecture | framework/server-component or Suspense data patterns | not used in this Vite client SPA |
+| `useSyncExternalStore` | safely subscribes to an external non-React store | library authors integrating browser/external store subscriptions | not needed in normal app components; React Redux handles its own integration |
+| `useInsertionEffect` | injects styles before layout effects | CSS-in-JS library authors | not for normal application code |
+
+Example `useReducer` for a local multi-step form:
+
+```jsx
+function reducer(state, action) {
+  switch (action.type) {
+    case "fieldChanged":
+      return { ...state, [action.name]: action.value };
+    case "reset":
+      return initialState;
+    default:
+      throw new Error("Unknown action");
+  }
+}
+
+const [form, dispatch] = useReducer(reducer, initialState);
+```
+
+Think of `useReducer` as local state with named events. Think of Redux Toolkit as the same reducer idea expanded for shared application state, middleware, devtools, and async workflows.
+
+### Other important React building blocks
+
+| API/concept | Meaning | Lumera example |
+|---|---|---|
+| `children` prop | JSX placed between a component's opening/closing tags | `ThemeProvider` receives and renders all application children |
+| Fragment (`<>...</>`) | groups JSX without an extra DOM element | list/layout grouping |
+| `StrictMode` | development-only checks that expose impure renders/missing effect cleanup | wraps both customer and dashboard apps in `main.jsx` |
+| `memo` | may skip a pure component render when its props are unchanged | not used yet; profile expensive ProductCard/row before adding |
+| `lazy` + `Suspense` | load component code only when first rendered and show fallback while waiting | not used yet; candidate for Payment/Orders/AI routes |
+| Error Boundary | catches descendant render errors and shows fallback UI | not implemented; recommended around major route areas |
+| Portal (`createPortal`) | renders DOM in a different DOM location while remaining in same React tree | `ProfilePanel` renders its drawer above normal page stacking |
+
+React’s official reference lists additional APIs and version-specific details. For interview preparation, learn the **problem each API solves** rather than trying to use every rare Hook. [React built-in APIs](https://react.dev/reference/react/apis), [React built-in components](https://react.dev/reference/react/components)
+
 ---
 
 ## 10. Context: small shared app settings

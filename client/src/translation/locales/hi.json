@@ -1,0 +1,33 @@
+{
+  "nav": {
+    "home": "होम",
+    "products": "उत्पाद",
+    "cart": "बैग",
+    "orders": "ऑर्डर",
+    "favourites": "पसंदीदा",
+    "about": "हमारे बारे में",
+    "faq": "सवाल-जवाब",
+    "contact": "संपर्क",
+    "searchPlaceholder": "LUMERA मार्केटप्लेस में खोजें",
+    "openMenu": "मेनू खोलें",
+    "account": "खाता",
+    "aiFind": "AI खोज"
+  },
+  "product": {
+    "addToBag": "बैग में जोड़ें",
+    "outOfStock": "यह आइटम अभी उपलब्ध नहीं है",
+    "signInToAdd": "बैग में जोड़ने के लिए साइन इन करें।",
+    "signInToSave": "पसंदीदा सेव करने के लिए साइन इन करें।"
+  },
+  "common": {
+    "loading": "लोड हो रहा है…",
+    "save": "सेव",
+    "cancel": "रद्द करें",
+    "language": "भाषा"
+  },
+  "auth": {
+    "signIn": "साइन इन",
+    "signOut": "साइन आउट",
+    "verifyingSession": "सेशन जाँच हो रही है"
+  }
+}

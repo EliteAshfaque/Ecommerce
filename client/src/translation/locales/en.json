@@ -1,0 +1,33 @@
+{
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "cart": "Bag",
+    "orders": "Orders",
+    "favourites": "Favourites",
+    "about": "About",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "searchPlaceholder": "Search the LUMERA marketplace",
+    "openMenu": "Open menu",
+    "account": "Account",
+    "aiFind": "AI Find"
+  },
+  "product": {
+    "addToBag": "Add to bag",
+    "outOfStock": "This item is currently unavailable",
+    "signInToAdd": "Sign in to add items to your bag.",
+    "signInToSave": "Sign in to save favourites."
+  },
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "language": "Language"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "verifyingSession": "Verifying session"
+  }
+}

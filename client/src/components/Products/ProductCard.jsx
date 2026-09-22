@@ -69,6 +69,11 @@ const ProductCard = ({ product, layout = "slider" }) => {
     e.preventDefault();
     e.stopPropagation();
     if (!inStock) return toast.info("This item is currently unavailable");
+    if (!authUser) {
+      toast.info("Sign in to add items to your bag.");
+      dispatch(toggleAuthPopup());
+      return;
+    }
     dispatch(addToCart({ product, quantity: 1 }));
     toast.success("Added to bag");
   };

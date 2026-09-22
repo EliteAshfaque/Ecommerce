@@ -1,0 +1,33 @@
+{
+  "nav": {
+    "home": "الرئيسية",
+    "products": "المنتجات",
+    "cart": "السلة",
+    "orders": "طلباتي",
+    "favourites": "المفضلة",
+    "about": "من نحن",
+    "faq": "الأسئلة الشائعة",
+    "contact": "تواصل معنا",
+    "searchPlaceholder": "ابحث في سوق لوميرا",
+    "openMenu": "فتح القائمة",
+    "account": "الحساب",
+    "aiFind": "بحث ذكي"
+  },
+  "product": {
+    "addToBag": "أضف إلى الحقيبة",
+    "outOfStock": "هذا المنتج غير متوفر حالياً",
+    "signInToAdd": "سجّل الدخول لإضافة المنتجات إلى الحقيبة.",
+    "signInToSave": "سجّل الدخول لحفظ المفضلة."
+  },
+  "common": {
+    "loading": "جاري التحميل…",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "language": "اللغة"
+  },
+  "auth": {
+    "signIn": "تسجيل الدخول",
+    "signOut": "تسجيل الخروج",
+    "verifyingSession": "جاري التحقق من الجلسة"
+  }
+}

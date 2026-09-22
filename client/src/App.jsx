@@ -15,6 +15,7 @@ import AISearchModal from "./components/Products/AISearchModal";
 import Footer from "./components/Layout/Footer";
 import LiveUpdates from "./components/LiveUpdates";
 import DeliveryAddressPrompt from "./components/Account/DeliveryAddressPrompt";
+import PwaTestPanel from "./components/PwaTestPanel";
 
 import Index from "./pages/Home";
 import Products from "./pages/Products";
@@ -106,6 +107,9 @@ function App() {
         </Routes>
 
         <Footer />
+
+        {/* Localhost dev only — hidden unless ?pwa-test=1 or Cmd+Shift+P */}
+        <PwaTestPanel />
       </div>
     </BrowserRouter>
   );

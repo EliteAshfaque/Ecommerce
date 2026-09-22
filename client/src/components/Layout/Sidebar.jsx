@@ -30,7 +30,7 @@ const Sidebar = () => {
     { name: "About", icon: Info, path: "/about" },
     { name: "FAQ", icon: HelpCircle, path: "/faq" },
     { name: "Contact", icon: Phone, path: "/contact" },
-    { name: "Cart", icon: ShoppingCart, path: "/cart" },
+   authUser && { name: "Cart", icon: ShoppingCart, path: "/cart" },
     authUser && { name: "Favourites", icon: Heart, path: "/favourites" },
     authUser && { name: "My Orders", icon: List, path: "/orders" },
     authUser?.role === "Admin" && {

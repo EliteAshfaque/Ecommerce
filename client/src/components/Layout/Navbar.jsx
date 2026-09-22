@@ -11,10 +11,14 @@ import {
   toggleAIModal,
 } from "../../store/slices/popupSlice";
 import { getSavedDeliveryLocation, requestDeliveryLocation } from "../../lib/location";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 // Shared header mounted by App on every customer route. It reads cart/auth/popup
 // Redux state, ThemeContext and Router location to open global UI or navigate.
 const Navbar = () => {
+  // t("nav.searchPlaceholder") reads from translation/locales/{en|ar|hi}.json
+  const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   const dispatch = useDispatch();
   const location = useLocation();
@@ -102,7 +106,7 @@ const Navbar = () => {
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search the LUMERA marketplace"
+                placeholder={t("nav.searchPlaceholder")}
                 className="h-10 w-full rounded-xl border border-white/60 bg-white/95 pl-11 pr-4 text-sm text-ink shadow-[0_8px_24px_rgb(14_12_42_/_0.12)] outline-none transition placeholder:text-stone focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
               />
             </label>
@@ -120,6 +124,7 @@ const Navbar = () => {
           </button>
 
           <div className="flex items-center gap-1 sm:gap-2">
+            <LanguageSwitcher overHero={isOverHero} />
             <button type="button" onClick={() => setLocationOpen((value) => !value)} className={`hidden items-center gap-1.5 rounded-xl px-2 py-2 text-[10px] font-bold uppercase tracking-[.12em] transition xl:flex ${isOverHero ? "text-white/90 hover:bg-white/10" : "text-foreground hover:bg-mist"}`} aria-expanded={locationOpen}>
               <MapPin className="h-4 w-4" /> {deliveryLocation?.label || "Set delivery area"}
             </button>
