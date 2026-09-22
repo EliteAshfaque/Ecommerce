@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 import { logout } from "../store/slices/authSlice";
 
-const STORE_URL = import.meta.env.VITE_STORE_URL || "http://localhost:5173";
+const STORE_URL = import.meta.env.VITE_STORE_URL || "https://shopmydoor.netlify.app";
 const primaryLinks = [{ to: "/", end: true, label: "Overview", icon: LayoutDashboard }, { to: "/orders", label: "Orders", icon: ShoppingBag }, { to: "/returns", label: "Returns", icon: RotateCcw }, { to: "/support", label: "Support", icon: Headphones }, { to: "/products", label: "Products", icon: Package }, { to: "/users", label: "Customers", icon: Users }];
 const contentLinks = [{ to: "/storefront", label: "Storefront", icon: PanelsTopLeft }, { to: "/sales", label: "Promotions", icon: BadgePercent }];
 
