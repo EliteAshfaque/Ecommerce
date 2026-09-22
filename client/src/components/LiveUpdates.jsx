@@ -7,6 +7,8 @@ import { fetchWishlist, clearWishlist } from "../store/slices/wishlistSlice";
 import { fetchStorefront } from "../store/slices/storefrontSlice";
 
 // Keeps visible storefront data current without polling the API.
+// Invisible application service mounted by App. It maps Socket.IO change events
+// to Redux refetches so visible pages stay correct without browser polling.
 const LiveUpdates = () => {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.auth.authUser?.id);

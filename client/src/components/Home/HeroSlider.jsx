@@ -3,6 +3,8 @@ import { ArrowUpRight, Check, ChevronLeft, ChevronRight, Sparkles } from "lucide
 import { Link } from "react-router-dom";
 
 // Banners are supplied exclusively by the storefront table, so campaign changes publish without a client release.
+// Homepage hero fed by CMS banner props from Home/storefrontSlice. Local state and
+// an effect manage the currently visible slide and its auto-advance timer.
 const HeroSlider = ({ banners = [] }) => {
   const slides = banners;
   const [current, setCurrent] = useState(0);
@@ -14,6 +16,8 @@ const HeroSlider = ({ banners = [] }) => {
   if (!banner) return <section className="relative flex min-h-[510px] items-end overflow-hidden bg-[#151331] px-6 pb-12 pt-16 text-white md:min-h-[550px] md:px-8"><div className="mx-auto w-full max-w-7xl animate-pulse"><div className="h-3 w-36 rounded bg-white/20" /><div className="mt-6 h-16 max-w-xl rounded bg-white/15 md:h-20" /><div className="mt-5 h-5 max-w-md rounded bg-white/10" /></div></section>;
   const image = banner.image_url;
 
+  // Hero design has three visual layers: image, dark/brand gradients for readable text,
+  // then foreground content. The grid becomes a 12-column desktop layout at lg.
   return <section className="relative isolate min-h-[510px] overflow-hidden bg-[#151331] pt-16 text-white md:min-h-[550px]">
     <img key={banner.id} src={image} alt={banner.title} className="animate-hero-pan absolute inset-0 h-full w-full object-cover object-[68%_center]" />
     <div key={`shade-${banner.id}`} className="animate-fade-in absolute inset-0 bg-[linear-gradient(90deg,rgba(13,12,36,.97)_0%,rgba(20,18,55,.82)_40%,rgba(23,18,55,.28)_76%,rgba(23,18,55,.22)_100%)]" />

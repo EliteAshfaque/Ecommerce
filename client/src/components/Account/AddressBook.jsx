@@ -9,6 +9,8 @@ const blank = { label: "Home", recipient_name: "", phone: "", address: "", city:
 const emirates = ["Abu Dhabi", "Dubai", "Sharjah", "Ajman", "Umm Al Quwain", "Ras Al Khaimah", "Fujairah"];
 
 // Account-owned addresses persist in user_addresses, not only in browser storage.
+// Account-address manager used inside ProfilePanel. It owns editable form/modal state,
+// calls authenticated address APIs, and can return a selected address to its parent via props.
 const AddressBook = ({ onSelect, deliveryIntent, onIntentHandled }) => {
   const [addresses, setAddresses] = useState([]);
   const [form, setForm] = useState(blank);

@@ -17,6 +17,8 @@ const quickSearches = [
   "Books",
 ];
 
+// Global search overlay controlled by popup Redux. It owns typed/suggestion UI
+// locally, requests matching products, then navigates to the URL-based Products page.
 const SearchOverlay = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);

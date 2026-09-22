@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { categories as fallbackCategories } from "../../data/products";
 
+// Reusable category grid that links a category selection to the URL-driven Products page.
 const CategoryGrid = ({ categories = [] }) => {
   const items = categories.length ? categories.map((category) => ({ ...category, image: category.image_url })) : fallbackCategories;
   return (

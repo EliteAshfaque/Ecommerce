@@ -31,6 +31,8 @@ export const toggleWishlist = createAsyncThunk(
   }
 );
 
+// Server-backed saved products shared by ProductCard, Favourites and LiveUpdates.
+// It is cleared locally on logout because the next visitor must not see prior data.
 const wishlistSlice = createSlice({
   name: "wishlist",
   initialState: { products: [], loading: false, error: null },

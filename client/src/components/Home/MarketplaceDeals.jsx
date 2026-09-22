@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import ProductCard from "../Products/ProductCard";
 
 // Only items with a database compare-at price appear here, keeping every advertised saving real.
+// Home merchandising section that receives selected product props and reuses ProductCard.
 const MarketplaceDeals = ({ products = [] }) => {
   const uniqueProducts = Array.from(new Map(products.filter((product) => product?.id).map((product) => [product.id, product])).values());
   const deals = uniqueProducts.filter((product) => Number(product.compare_at_price) > Number(product.price)).slice(0, 4);

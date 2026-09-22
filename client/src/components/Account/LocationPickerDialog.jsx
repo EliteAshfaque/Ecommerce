@@ -5,6 +5,8 @@ import { locationFromPlace, loadGoogleMaps, requestDeliveryLocation, reverseGeoc
 const UAE_CENTER = { lat: 25.2048, lng: 55.2708 };
 
 // A real Google Maps picker: search comes from Places Autocomplete and map clicks reverse-geocode a precise pin.
+// Reusable Google Maps dialog. Parent controls whether it is open and receives the
+// normalized selected location; refs hold external map/marker DOM instances safely.
 const LocationPickerDialog = ({ open, onClose, onSelect }) => {
   const mapElement = useRef(null);
   const searchInput = useRef(null);

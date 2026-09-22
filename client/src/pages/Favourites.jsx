@@ -5,6 +5,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { toggleAuthPopup } from "../store/slices/popupSlice";
 import ProductCard from "../components/Products/ProductCard";
 
+// Route page for `/favourites`: reads the authenticated user's server-backed
+// wishlist from Redux and applies local text/category filtering for display.
 const Favourites = () => {
   const dispatch = useDispatch();
   const authUser = useSelector((state) => state.auth.authUser);

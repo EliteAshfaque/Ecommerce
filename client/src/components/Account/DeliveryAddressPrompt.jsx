@@ -7,6 +7,8 @@ import { requestDeliveryLocation } from "../../lib/location";
 import { toggleAuthPopup } from "../../store/slices/popupSlice";
 
 // Prompt only signed-in customers with no saved database address at all.
+// Global, non-blocking prompt mounted by App. It suggests saving a delivery address
+// after login/location use and sends guests to the shared auth modal when needed.
 const DeliveryAddressPrompt = () => {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.auth.authUser?.id);

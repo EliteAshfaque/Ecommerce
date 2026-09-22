@@ -12,6 +12,8 @@ import {
 } from "../../store/slices/popupSlice";
 import { getSavedDeliveryLocation, requestDeliveryLocation } from "../../lib/location";
 
+// Shared header mounted by App on every customer route. It reads cart/auth/popup
+// Redux state, ThemeContext and Router location to open global UI or navigate.
 const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const dispatch = useDispatch();
@@ -55,6 +57,8 @@ const Navbar = () => {
   };
 
   return (
+    // `fixed top-0 z-50` keeps navigation above page content. `backdrop-blur-xl`
+    // gives the transparent marketplace header contrast without a solid block.
     <nav
       className={`fixed left-0 top-0 z-50 w-full border-b backdrop-blur-xl transition-colors ${
         isOverHero
@@ -89,6 +93,8 @@ const Navbar = () => {
             </Link>
           </div>
 
+          {/* Desktop search appears from md (768px). On smaller screens the separate
+              search-icon button below opens the mobile SearchOverlay instead. */}
           <form onSubmit={submitSearch} className="mx-4 hidden max-w-2xl flex-1 md:block">
             <label className="relative block">
               <span className="sr-only">Search LUMERA</span>
@@ -102,6 +108,8 @@ const Navbar = () => {
             </label>
           </form>
 
+          {/* AI discovery is progressive enhancement: hidden on compact widths to protect
+              the header's primary navigation and touch targets, shown from lg upward. */}
           <button
             type="button"
             onClick={() => dispatch(toggleAIModal())}
@@ -189,6 +197,8 @@ const Navbar = () => {
           {locationMessage && <p className="mt-3 text-xs leading-relaxed text-stone">{locationMessage}</p>}
         </div>
       )}
+      {/* A desktop-only horizontal department rail visually joins the header to the hero.
+          `overflow-x-auto` keeps long CMS category names usable rather than wrapping badly. */}
       {isOverHero && categories.length > 0 && (
         <div className="absolute top-full hidden w-full border-y border-white/10 bg-[#151331]/70 backdrop-blur-xl lg:block">
           <div className="mx-auto flex max-w-[1600px] items-center gap-1 overflow-x-auto px-4 py-2.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

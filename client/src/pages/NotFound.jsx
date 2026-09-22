@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 
+// Fallback route page shown by App's `*` route when no customer URL matches.
 const NotFound = () => {
   return (
     <div className="page-shell">

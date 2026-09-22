@@ -14,6 +14,8 @@ import { Link, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleSidebar } from "../../store/slices/popupSlice";
 
+// Mobile/navigation drawer controlled by popup Redux state so Navbar and this
+// distant component can coordinate without passing props through App.
 const Sidebar = () => {
   const dispatch = useDispatch();
   const location = useLocation();
@@ -44,13 +46,14 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* OVERLAY */}
+      {/* Modal-style backdrop: it occupies the viewport but stays one z-index below drawer. */}
       <div
         className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
         onClick={closeSidebar}
       />
 
-      {/* SIDEBAR */}
+      {/* Fixed 320px navigation drawer. The slide-in animation comes from Tailwind config;
+          route Links close it so navigation feels like a single mobile interaction. */}
       <aside className="glass-panel animate-slide-in-left fixed left-0 top-0 z-50 h-full w-80">
         <div className="flex items-center justify-between border-b border-border/10 p-6">
           <h2 className="font-display text-xl font-semibold text-primary">

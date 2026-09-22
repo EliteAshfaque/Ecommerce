@@ -40,6 +40,8 @@ export const getProductImages = (product) => {
   return [getProductImage(product)];
 };
 
+// Reusable product UI used by Home sliders, Products grid, favourites and related items.
+// Product arrives as a prop; cart/wishlist/auth interactions connect to shared Redux state.
 const ProductCard = ({ product, layout = "slider" }) => {
   const dispatch = useDispatch();
   const authUser = useSelector((state) => state.auth.authUser);
@@ -83,6 +85,8 @@ const ProductCard = ({ product, layout = "slider" }) => {
   };
 
   return (
+    // `group` lets child image/icons react to one card hover. Slider cards have a fixed
+    // readable width; grid cards become flexible because their parent controls columns.
     <article
       className={
         layout === "grid" ? "group w-full" : "group w-[224px] shrink-0 sm:w-[244px]"
@@ -90,6 +94,8 @@ const ProductCard = ({ product, layout = "slider" }) => {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
+      {/* Aspect ratio reserves image space (less layout shift); overflow/rounded corners
+          create the editorial card crop; absolute children layer badges/actions over image. */}
       <div className="market-product-card relative aspect-[4/5] overflow-hidden rounded-3xl bg-white">
         <Link to={`/product/${product.id}`} className="absolute inset-0" aria-label={`View ${product.name}`}>
           <img
@@ -102,6 +108,8 @@ const ProductCard = ({ product, layout = "slider" }) => {
           <span className={`absolute left-3 top-3 rounded-full border px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] backdrop-blur-md ${hasSaving ? "border-amber-200 bg-amber-100/90 text-amber-900" : "border-white/30 bg-white/65 text-ink"}`}>
             {!inStock ? "Sold out" : product.badge || (hasSaving ? `${savingPercent}% off` : "In stock")}
           </span>
+          {/* On touch the quick-add button is always reachable. On sm+ it begins below the
+              image and slides in on hover, adding polish without hiding the core action. */}
           <button
             type="button"
             onClick={handleFavourite}
@@ -121,6 +129,7 @@ const ProductCard = ({ product, layout = "slider" }) => {
             {inStock ? "Quick add" : "Sold out"}
           </button>
       </div>
+      {/* Text is outside the image crop so product information remains selectable/readable. */}
       <Link to={`/product/${product.id}`} className="block px-2 pb-2 pt-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">

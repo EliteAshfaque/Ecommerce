@@ -138,6 +138,8 @@ const initialState = {
   error: null,
 };
 
+// Stores catalogue list/detail data, active API filters and request states used
+// by Home, Products, ProductDetail, search, reviews and socket refreshes.
 const productSlice = createSlice({
   name: "product",
   initialState,

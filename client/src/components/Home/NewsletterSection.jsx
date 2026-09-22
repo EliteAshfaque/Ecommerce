@@ -2,6 +2,8 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import axiosInstance from "../../lib/axios";
 
+// Controlled homepage email form. It owns only typed email/submitting UI and posts
+// to the storefront API; it is not Redux state because no other screen needs it.
 const NewsletterSection = () => {
   const [email, setEmail] = useState("");
 

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import axiosInstance from "../lib/axios";
 
+// Route page for `/contact`: a controlled support form that posts to the public
+// storefront endpoint; dashboard Support later reads and manages these messages.
 const Contact = () => {
   const [form, setForm] = useState({
     name: "",

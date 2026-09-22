@@ -8,12 +8,14 @@ import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
 import App from "./App.jsx";
 
+// Application bootstrap: Redux makes shared state available, ThemeProvider supplies
+// the light/dark setting, and ToastContainer displays messages from pages/thunks.
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
       <ThemeProvider>
         <App />
-        <ToastContainer position="top-right" autoClose={3000} />
+        <ToastContainer position="top-right" autoClose={1000} />
       </ThemeProvider>
     </Provider>
   </StrictMode>

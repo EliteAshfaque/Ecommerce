@@ -13,6 +13,8 @@ const features = [
 
 const iconTones = { violet: "bg-violet-100 text-violet-700", emerald: "bg-emerald-100 text-emerald-700", sky: "bg-sky-100 text-sky-700", rose: "bg-rose-100 text-rose-700" };
 
+// Presentational/trust feature section with a small local location-request state.
+// Browser location is requested only after the customer chooses the action.
 const FeatureSection = () => {
   const [locating, setLocating] = useState(false);
 

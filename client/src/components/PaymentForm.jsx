@@ -10,6 +10,8 @@ import { toast } from "react-toastify";
 import { clearCart } from "../store/slices/cartSlice";
 import { resetOrderFlow } from "../store/slices/orderSlice";
 
+// Stripe Elements child used only after Payment has received a server-created
+// PaymentIntent. It confirms card payment, then clears local checkout state on success.
 const PaymentForm = ({ amount }) => {
   const stripe = useStripe();
   const elements = useElements();

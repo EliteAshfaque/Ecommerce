@@ -8,6 +8,7 @@ const signals = [
   { icon: Headphones, title: "Need order help?", copy: "Talk to LUMERA support", to: "/contact" },
 ];
 
+// Static trust/service signal row. It is intentionally presentational and has no shared state.
 const MarketplaceSignals = () => (
   <section className="relative z-20 -mt-5 mx-auto w-[calc(100%-2rem)] max-w-6xl rounded-2xl border border-white/80 bg-white/90 p-2 shadow-[0_18px_42px_rgba(24,18,74,.12)] backdrop-blur-xl md:-mt-7 md:w-[calc(100%-4rem)]">
     <div className="grid grid-cols-2 divide-x divide-y divide-ink/8 md:grid-cols-4 md:divide-y-0">

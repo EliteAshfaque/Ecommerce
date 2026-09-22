@@ -7,8 +7,11 @@ import { deleteReview, fetchProductDetails, postReview } from "../../store/slice
 import { toggleAuthPopup } from "../../store/slices/popupSlice";
 import { fetchMyOrders } from "../../store/slices/orderSlice";
 
+// Display-only reusable star rating. The surrounding review component owns review data.
 const Stars = ({ value, size = "h-4 w-4" }) => <span className="flex gap-0.5" aria-label={`${Number(value).toFixed(1)} out of 5 stars`}>{Array.from({ length: 5 }).map((_, index) => <Star key={index} className={`${size} ${index < Math.round(Number(value)) ? "fill-amber-400 text-amber-400" : "text-border/20"}`} />)}</span>;
 
+// Product-detail child for reviews. It combines the passed product id with Redux
+// product/auth/order data to allow verified signed-in customers to create/delete a review.
 const ReviewsContainer = ({ productId }) => {
   const dispatch = useDispatch();
   const location = useLocation();

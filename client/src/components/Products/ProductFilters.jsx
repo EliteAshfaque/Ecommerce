@@ -20,6 +20,8 @@ const availabilityOptions = [
   { label: "Limited", value: "limited" },
 ];
 
+// Tiny presentational filter control. Products page owns the actual filter value
+// and receives a click through this callback chain.
 const Chip = ({ active, onClick, children }) => (
   <button
     type="button"
@@ -34,11 +36,16 @@ const Chip = ({ active, onClick, children }) => (
   </button>
 );
 
+// Reusable catalogue filter UI. It never fetches products itself: its parent
+// supplies current filters and callbacks so URL state/API fetching stay in one place.
 const ProductFilters = ({ filters, onChange, onClear, categories = [], mobile = false }) => {
   const categoryItems = categories.length ? categories : fallbackCategories;
   const set = (key, value) => onChange({ ...filters, [key]: value, page: 1 });
 
   return (
+    // One component supports two layouts: inline full-width controls on mobile, or a
+    // fixed-width sticky sidebar from lg. Keeping the data/callback props identical
+    // means both layouts implement exactly the same filtering behavior.
     <aside
       className={`${
         mobile ? "w-full" : "sticky top-24 hidden w-[238px] shrink-0 lg:block"

@@ -28,6 +28,7 @@ import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import Favourites from "./pages/Favourites";
 
+// Shown until /auth/me confirms whether the browser's HTTP-only cookie represents a user.
 function AuthLoader() {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-fog dark:bg-[#0c0e12]">
@@ -55,10 +56,13 @@ function AuthLoader() {
   );
 }
 
+// Root customer application: loads shared API data once, mounts global overlays,
+// and connects URL paths to page components through React Router.
 function App() {
   const dispatch = useDispatch();
   const { isCheckingAuth } = useSelector((state) => state.auth);
 
+  // These Redux thunks populate auth, product and storefront state for all pages.
   useEffect(() => {
     dispatch(getUser());
     dispatch(fetchProducts());
@@ -71,7 +75,10 @@ function App() {
 
   return (
     <BrowserRouter>
+      {/* Design shell: `min-h-screen` fills short pages, semantic colour tokens support
+          light/dark themes, and transition-colors makes a theme switch feel gentle. */}
       <div className="min-h-screen bg-fog text-ink transition-colors">
+        {/* Fixed/global UI stays outside Routes so a route change does not rebuild it. */}
         <Navbar />
         <Sidebar />
         <SearchOverlay />
@@ -82,6 +89,7 @@ function App() {
         <LiveUpdates />
         <DeliveryAddressPrompt />
 
+        {/* Only the page inside Routes changes when the browser URL changes. */}
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/password/reset/:token" element={<Index />} />

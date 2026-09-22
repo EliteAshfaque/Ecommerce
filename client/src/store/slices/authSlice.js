@@ -3,6 +3,8 @@ import axiosInstance from "../../lib/axios";
 import { toast } from "react-toastify";
 import { toggleAuthPopup } from "./popupSlice";
 
+// Async auth actions call Express and keep user/loading state shared by navigation,
+// modals, protected features, checkout and real-time socket room membership.
 export const   register = createAsyncThunk(
   "auth/register",
   async (data, thunkApi) => {

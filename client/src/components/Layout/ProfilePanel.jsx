@@ -14,6 +14,9 @@ const tabs = [
   { id: "security", label: "Security", icon: ShieldCheck },
 ];
 
+// Authenticated account drawer rendered through a portal above the route content.
+// It reads auth state, updates profile/password through thunks, and delegates addresses
+// to AddressBook while keeping panel tab/form UI local.
 const ProfilePanel = () => {
   const dispatch = useDispatch();
   const { isAuthPopupOpen } = useSelector((state) => state.popup);
@@ -121,6 +124,7 @@ const ProfilePanel = () => {
   ), document.body);
 };
 
+// Small presentational input used by ProfilePanel's password tab; parent owns values/state.
 function PasswordField({ label, value, onChange, show, onToggle, inputClass }) {
   return <div className="relative"><label className="text-[10px] font-bold uppercase tracking-[.16em] text-stone">{label}</label><input type={show ? "text" : "password"} value={value} onChange={(event) => onChange(event.target.value)} className={`${inputClass} pr-11`} /><button type="button" onClick={onToggle} className="absolute right-3 top-8 rounded-lg p-1.5 text-stone hover:bg-mist" aria-label={`Show or hide ${label}`}>{show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button></div>;
 }

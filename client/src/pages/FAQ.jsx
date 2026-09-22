@@ -29,6 +29,8 @@ const faqs = [
   },
 ];
 
+// Route page for `/faq`: a local-only accordion; no Redux or API is needed because
+// the questions are static content and only the open panel changes.
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState(0);
 

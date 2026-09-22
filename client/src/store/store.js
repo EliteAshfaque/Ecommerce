@@ -17,6 +17,8 @@ const loadSavedCart = () => {
   }
 };
 
+// Customer-wide Redux state. Pages/components read a slice with useSelector and
+// change it by dispatching an action or asynchronous thunk.
 export const store = configureStore({
   reducer: {
     auth: authReducer,

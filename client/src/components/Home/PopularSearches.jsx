@@ -2,6 +2,7 @@ import { ArrowUpRight, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 
 // Categories arrive from the storefront table, so these quick searches stay aligned with live merchandising.
+// Shortcut links to the URL-based catalogue filters; parent supplies active categories as props.
 const PopularSearches = ({ categories = [] }) => {
   if (!categories.length) return null;
   return (

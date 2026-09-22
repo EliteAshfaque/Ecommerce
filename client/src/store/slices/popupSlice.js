@@ -1,5 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+// Shared UI-only state for overlays that can be opened from distant components,
+// such as Navbar -> CartSidebar or ProductCard -> LoginModal.
 const popupSlice = createSlice({
   name: "popup",
   initialState: {

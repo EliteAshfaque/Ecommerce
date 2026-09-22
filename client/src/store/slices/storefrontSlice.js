@@ -10,6 +10,8 @@ export const fetchStorefront = createAsyncThunk("storefront/fetch", async (_, th
   }
 });
 
+// Stores CMS-style homepage content. Home reads it and Socket.IO invalidates it
+// when an administrator changes banners, categories, offers or news.
 const storefrontSlice = createSlice({
   name: "storefront",
   initialState: { categories: [], banners: [], offers: [], news: [], loading: false, error: null },

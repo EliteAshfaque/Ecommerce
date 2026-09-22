@@ -13,6 +13,8 @@ const prompts = [
   "Kitchen pieces with timeless materials",
 ];
 
+// Global AI product-search modal. It reads popup/auth state, sends an authenticated
+// natural-language query through productSlice, then navigates to the normal products view.
 const AISearchModal = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();

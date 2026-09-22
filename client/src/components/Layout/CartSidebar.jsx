@@ -7,6 +7,8 @@ import {
 } from "../../store/slices/cartSlice";
 import { toggleCart } from "../../store/slices/popupSlice";
 
+// Global mini-cart drawer. It selects the same cart state as Cart/Payment and
+// dispatches cart actions; the page route is not required to use this component.
 const CartSidebar = () => {
   const dispatch = useDispatch();
   const { isCartOpen } = useSelector((state) => state.popup);
@@ -46,13 +48,15 @@ const CartSidebar = () => {
 
   return (
     <>
-      {/* OVERLAY */}
+      {/* Backdrop sits below the drawer (`z-40` vs `z-50`) and closes it on click.
+          The opaque blur visually separates a temporary task from the page beneath. */}
       <div
         className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
         onClick={closeCart}
       />
 
-      {/* CART PANEL */}
+      {/* Drawer is full width on small phones but capped by max-w-md on larger screens.
+          `flex-col` creates a fixed header/footer with a flexible scrolling item region. */}
       <aside className="animate-slide-in-right fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col border-l border-border/10 bg-fog/95 shadow-2xl backdrop-blur-xl dark:bg-[#12151c]/96">
         {/* HEADER */}
         <div className="flex items-center justify-between border-b border-border/10 px-6 py-5">
@@ -79,7 +83,8 @@ const CartSidebar = () => {
           </button>
         </div>
 
-        {/* ITEMS */}
+        {/* `flex-1 overflow-y-auto` is the key layout rule: only cart lines scroll,
+            while checkout total/button remain visible in the footer. */}
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {cart.length > 0 ? (
             <div className="space-y-4">

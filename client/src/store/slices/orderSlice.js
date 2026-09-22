@@ -56,6 +56,8 @@ export const fetchSingleOrder = createAsyncThunk(
   }
 );
 
+// Owns customer order history plus the short-lived checkout state needed to pass
+// the server-created Stripe PaymentIntent from Payment to PaymentForm.
 const orderSlice = createSlice({
   name: "order",
   initialState: {

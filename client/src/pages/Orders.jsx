@@ -34,6 +34,8 @@ const formatDate = (value) => {
 
 const returnReasons = ["Changed my mind", "Damaged or defective", "Wrong item received", "Not as described", "Other"];
 
+// Small child form inside an order card. It owns return-only fields, posts the
+// request to the API, then tells the parent to refresh its returns list.
 const ReturnRequestForm = ({ order, items, onSubmitted }) => {
   const [reason, setReason] = useState(returnReasons[0]);
   const [note, setNote] = useState("");
@@ -55,6 +57,8 @@ const ReturnRequestForm = ({ order, items, onSubmitted }) => {
   return <form onSubmit={submit} className="rounded-2xl border border-primary/15 bg-primary/[.035] p-4"><p className="text-[10px] font-bold uppercase tracking-[.16em] text-primary">Start a return</p><p className="mt-2 text-sm text-stone">Choose the delivered items and tell us what happened. A LUMERA team member will review your request.</p><div className="mt-4 space-y-3">{items.map((item) => <div key={item.order_item_id} className="flex items-center justify-between gap-3 rounded-xl bg-white/75 px-3 py-2.5"><p className="line-clamp-1 text-sm font-medium">{item.title || "Order item"}</p><label className="flex items-center gap-2 text-xs text-stone">Qty <input type="number" min="0" max={item.quantity} value={selected.find((row) => row.order_item_id === item.order_item_id)?.quantity ?? 0} onChange={(event) => setQuantity(item, event.target.value)} className="w-14 rounded-lg border border-border/15 bg-white px-2 py-1 text-center outline-none focus:border-primary" /></label></div>)}</div><div className="mt-4 grid gap-3 sm:grid-cols-2"><select value={reason} onChange={(event) => setReason(event.target.value)} className="rounded-xl border border-border/15 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary">{returnReasons.map((option) => <option key={option}>{option}</option>)}</select><input value={note} onChange={(event) => setNote(event.target.value)} maxLength="1500" placeholder="Optional note" className="rounded-xl border border-border/15 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary" /></div><button disabled={saving} className="mt-4 rounded-xl bg-ink px-4 py-2.5 text-[10px] font-bold uppercase tracking-[.13em] text-white transition hover:bg-primary">{saving ? "Submitting…" : "Submit return request"}</button></form>;
 };
 
+// Reusable display for one order. The parent supplies order data and any linked
+// returns; local state controls whether detail and return form are expanded.
 const OrderCard = ({ order, returns, onReturnSubmitted }) => {
   const [open, setOpen] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
@@ -262,6 +266,8 @@ const OrderCard = ({ order, returns, onReturnSubmitted }) => {
   );
 };
 
+// Route page for `/orders`: fetches the signed-in customer's orders through Redux
+// and return requests directly, then groups/filter them before rendering OrderCards.
 const Orders = () => {
   const dispatch = useDispatch();
   const { authUser } = useSelector((state) => state.auth);

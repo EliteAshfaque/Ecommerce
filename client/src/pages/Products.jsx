@@ -15,6 +15,8 @@ const sortOptions = [
   ["price-high", "Price: high to low"],
 ];
 
+// Route page for `/products`: keeps filter/search/page in the URL, dispatches a
+// product thunk, then passes results and callbacks to reusable filters/cards/pagination.
 const Products = () => {
   const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -66,6 +68,8 @@ const Products = () => {
   };
 
   return (
+    // Page layout: viewport spacing accounts for fixed Navbar; max-w-7xl prevents an
+    // ultra-wide screen from making product cards and text uncomfortable to scan.
     <main className="page-shell min-h-screen bg-fog px-6 pb-24 pt-28 text-ink md:px-8">
       <div className="mx-auto max-w-7xl">
         <header className="mb-9 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
@@ -88,6 +92,8 @@ const Products = () => {
           {categories.map((item) => <button key={item.id} onClick={() => setParams({ category: item.name })} className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition ${category === item.name ? "bg-ink text-white shadow-lg" : "border border-border/15 bg-white/60 text-stone hover:text-ink"}`}>{item.name}</button>)}
         </div>
 
+        {/* Search/sort stay in one flexible surface. The filter button is mobile-only;
+            desktop uses the persistent sidebar below, avoiding duplicate controls. */}
         <section className="glass-card mb-8 rounded-3xl p-3 md:p-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
             <form onSubmit={submitSearch} className="relative flex-1">
@@ -105,10 +111,14 @@ const Products = () => {
           {showFilters && <div className="mt-4 border-t border-border/10 pt-5 lg:hidden"><ProductFilters filters={filters} onChange={setParams} onClear={clearFilters} categories={categories} mobile /></div>}
         </section>
 
+        {/* Desktop: sticky filter sidebar + flexible result column. Mobile: sidebar is hidden
+            and the same ProductFilters component is rendered in the collapsible mobile panel. */}
         <div className="flex items-start gap-9">
           <ProductFilters filters={filters} onChange={setParams} onClear={clearFilters} categories={categories} />
           <section className="min-w-0 flex-1">
             <div className="mb-6 flex items-center justify-between text-xs text-stone"><span>{activeCount ? `${activeCount} active filter${activeCount === 1 ? "" : "s"}` : "Browse all departments"}</span><span>Prices in AED</span></div>
+            {/* All UI states preserve the same two-column phone / three-column md grid.
+                Skeleton aspect ratios prevent the page jumping when API cards arrive. */}
             {loading ? <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 md:gap-x-7"><>{Array.from({ length: 9 }).map((_, index) => <div key={index} className="animate-pulse"><div className="aspect-[4/5] rounded-3xl bg-mist" /><div className="mt-4 h-3 w-20 rounded bg-mist" /><div className="mt-2 h-4 w-2/3 rounded bg-mist" /></div>)}</></div> : products.length === 0 ? <div className="glass-card rounded-3xl px-6 py-24 text-center"><p className="font-display text-2xl font-semibold">Nothing in this edit yet</p><p className="mt-2 text-sm text-stone">Try another category, price range or search term.</p><button onClick={clearFilters} className="btn-primary mt-6">Clear discovery filters</button></div> : <><div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 md:gap-x-7 md:gap-y-14">{products.map((product) => <ProductCard key={product.id} product={product} layout="grid" />)}</div><Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(nextPage) => setParams({ page: nextPage })} /></>}
           </section>
         </div>

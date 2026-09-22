@@ -15,6 +15,8 @@ const values = [
   },
 ];
 
+// Route page for `/about`: presentational brand/value content with Router links
+// to next actions. It has no shared state or API dependency.
 const About = () => {
   return (
     <div className="page-shell">

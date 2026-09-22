@@ -10,6 +10,8 @@ const normaliseEmirate = (value = "") => {
   ) || "";
 };
 
+// Reads the optional browser-only delivery pin used to prefill delivery UX.
+// It is not the source of truth for an order address.
 export const getSavedDeliveryLocation = () => {
   try {
     return JSON.parse(window.localStorage.getItem(LOCATION_STORAGE_KEY) || "null");
@@ -19,6 +21,8 @@ export const getSavedDeliveryLocation = () => {
 };
 
 // Places powers building, tower, street, and area suggestions in the delivery picker.
+// Loads Google Maps only after a location feature needs it, keeping first-page
+// JavaScript lighter. The browser key must be restricted to approved domains.
 export const loadGoogleMaps = () => new Promise((resolve, reject) => {
   if (window.google?.maps) return resolve(window.google.maps);
 
@@ -47,6 +51,7 @@ export const loadGoogleMaps = () => new Promise((resolve, reject) => {
   document.head.appendChild(script);
 });
 
+// Converts coordinates into the normalized address shape expected by address/checkout forms.
 export const reverseGeocode = async (latitude, longitude) => {
   const maps = await loadGoogleMaps();
   const geocoder = new maps.Geocoder();
@@ -63,6 +68,7 @@ export const reverseGeocode = async (latitude, longitude) => {
 };
 
 // A Places Autocomplete result has the same address data shape as Geocoder.
+// Converts a Places Autocomplete result into the same normalized delivery-location shape.
 export const locationFromPlace = (place) => {
   const components = place?.address_components || [];
   const location = place?.geometry?.location;
@@ -82,6 +88,7 @@ export const locationFromPlace = (place) => {
 };
 
 // Location is requested only after a customer action. Coordinates stay in this browser's local storage.
+// Requests browser geolocation only after a user action, then saves a local convenience pin.
 export const requestDeliveryLocation = () => new Promise((resolve, reject) => {
   if (!navigator.geolocation) {
     reject(new Error("Location is not supported by this browser."));

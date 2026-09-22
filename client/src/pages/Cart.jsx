@@ -6,6 +6,8 @@ import { getProductImage } from "../components/Products/ProductCard";
 
 const formatAED = (amount) => Number(amount || 0).toLocaleString("en-AE", { style: "currency", currency: "AED" });
 
+// Route page for `/cart`: reads the shared Redux bag, calculates display totals,
+// and dispatches quantity/remove/clear actions before moving the customer to checkout.
 const Cart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();

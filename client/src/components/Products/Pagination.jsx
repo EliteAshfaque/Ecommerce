@@ -1,5 +1,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+// Presentational page controls. Products owns URL/API state; this child only reports
+// the requested page through onPageChange and prevents invalid page navigation.
 const Pagination = ({ currentPage = 1, totalPages = 1, onPageChange }) => {
   if (totalPages <= 1) return null;
 

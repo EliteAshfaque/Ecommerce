@@ -3,6 +3,8 @@ import { ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import ProductCard from "../Products/ProductCard";
 
+// Reusable horizontal product rail. It receives products/title as props, keeps only
+// scroll UI state locally, and delegates each product's actions to ProductCard.
 const ProductSlider = ({
   title,
   subtitle,
@@ -55,6 +57,7 @@ const ProductSlider = ({
 
   return (
     <section className="relative mb-24 animate-fade-up">
+      {/* Header stacks on phones and becomes a left-content/right-actions row at md. */}
       <div className="mb-10 flex flex-col gap-6 border-b border-border/10 pb-6 md:flex-row md:items-end md:justify-between">
         <div className="max-w-xl">
           <div className="flex items-center gap-3">
@@ -103,6 +106,8 @@ const ProductSlider = ({
       </div>
 
       <div className="relative">
+        {/* Native horizontal scrolling works with touch, mouse wheel and the arrow buttons.
+            `snap-x snap-mandatory` makes each reusable ProductCard stop cleanly in view. */}
         <div
           ref={scrollRef}
           className="flex gap-5 overflow-x-auto scroll-smooth pb-6 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] md:gap-6 [&::-webkit-scrollbar]:hidden"
@@ -137,6 +142,7 @@ const ProductSlider = ({
         </div>
       </div>
 
+      {/* Progress is visual feedback from local scroll state, not a second product-data source. */}
       <div className="mt-3 flex items-center gap-4">
         <div className="h-[2px] flex-1 overflow-hidden bg-border/10">
           <div

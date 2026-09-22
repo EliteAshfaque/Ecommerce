@@ -57,6 +57,8 @@ const socials = [
   },
 ];
 
+// Shared presentational footer mounted by App after every route. Router Links avoid
+// a full browser reload while navigating customer pages.
 const Footer = () => {
   const year = new Date().getFullYear();
 

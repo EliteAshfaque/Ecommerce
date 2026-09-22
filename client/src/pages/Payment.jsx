@@ -30,6 +30,9 @@ const formatAED = (amount) => Number(amount || 0).toLocaleString("en-AE", { styl
 const fieldClass =
   "mt-1.5 w-full border-0 border-b border-border/15 bg-transparent py-2.5 text-sm outline-none transition focus:border-ink";
 
+// Route page for `/payment`: coordinates local shipping/address/promotion form data
+// with Redux cart/order state. The server creates the order and Stripe intent; the
+// child PaymentForm safely confirms the payment through Stripe Elements.
 const Payment = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -294,6 +297,8 @@ const Payment = () => {
   };
 
   return (
+    // Checkout visual shell: fixed-navbar spacer, centered max width and mobile-safe
+    // padding. The layout expands from one reading column into a 12-column grid at lg.
     <div className="min-h-screen bg-fog text-ink">
       <div className="h-16" />
 
@@ -350,6 +355,8 @@ const Payment = () => {
           </div>
         </div>
 
+        {/* Form owns 7 desktop columns; the summary owns 5. On phones Grid has no
+            column prefix, so the checkout naturally stacks with a comfortable gap. */}
         <div className="grid gap-14 lg:grid-cols-12 lg:gap-16">
           {/* Left: forms */}
           <div className="lg:col-span-7">
@@ -529,6 +536,8 @@ const Payment = () => {
                     Order #{String(orderId).slice(0, 8).toUpperCase()}
                   </p>
                 )}
+                {/* Stripe Elements is styled through Stripe's appearance options; card fields
+                    stay in Stripe's secure component rather than being hand-built inputs. */}
                 <Elements
                   stripe={stripePromise}
                   options={{

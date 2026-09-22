@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 
 // Categories and their product totals come from /storefront, so merchandising stays in sync with the database.
+// Homepage category-navigation rail. Categories are props so CMS/fallback data can
+// be reused without this component knowing about Redux or API requests.
 const DepartmentRail = ({ categories = [] }) => {
   if (!categories.length) return null;
 
@@ -17,6 +19,8 @@ const DepartmentRail = ({ categories = [] }) => {
         </Link>
       </div>
 
+      {/* This is intentionally a horizontally scrollable flex rail, not a tiny wrapped
+          grid: touch users can browse many departments while cards retain readable width. */}
       <div className="flex gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {categories.map((category) => (
           <Link

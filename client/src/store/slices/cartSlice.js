@@ -35,6 +35,8 @@ const saveCart = (cart) => {
  *   quantity: 2
  * }
  */
+// Shared bag state used by Navbar, CartSidebar, Cart page and Payment page.
+// The local copy helps a customer keep a bag after refresh; checkout revalidates server data.
 const cartSlice = createSlice({
   // Unique name for this slice in the Redux store
   // You will read it later as: state.cart

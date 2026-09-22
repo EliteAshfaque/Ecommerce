@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 const ThemeContext = createContext();
 
+// Small custom hook so components can read/toggle theme without knowing Context details.
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
@@ -15,6 +16,8 @@ const getInitialTheme = () => {
   return localStorage.getItem("theme") || "light";
 };
 
+// Provides a persisted light/dark theme to the whole storefront. It changes the
+// `dark` class on <html>, which activates Tailwind's dark: styles and CSS tokens.
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(getInitialTheme);
 

@@ -25,6 +25,8 @@ const subtitles = {
   reset: "Enter your new password below.",
 };
 
+// Global authentication modal. It switches between sign-in/register/forgot/reset
+// forms locally and dispatches auth thunks, while App keeps it mounted across routes.
 const LoginModal = () => {
   const dispatch = useDispatch();
   const location = useLocation();

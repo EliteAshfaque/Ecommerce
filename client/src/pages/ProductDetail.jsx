@@ -12,6 +12,8 @@ import { getProductImages } from "../components/Products/ProductCard";
 import ProductCard from "../components/Products/ProductCard";
 import ReviewsContainer from "../components/Products/ReviewsContainer";
 
+// Route page for `/product/:id`: fetches one product from the URL id, keeps only
+// gallery/quantity UI locally, and sends cart/review actions to Redux/API helpers.
 const ProductDetail = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
