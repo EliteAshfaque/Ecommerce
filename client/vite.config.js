@@ -49,6 +49,8 @@ export default defineConfig({
       workbox: {
         // Cache built JS/CSS/HTML and public assets for offline shell.
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // The editorial hero is 2.25 MB, slightly above Workbox's 2 MB default.
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         // API calls still go to the network — ecommerce needs live data for checkout.
         navigateFallback: "/index.html",
         runtimeCaching: [
