@@ -2,6 +2,15 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
+// =============================================================================
+// Backend / API URL does NOT go in this file.
+// Set it in:
+//   - client/.env              → VITE_API_URL (local)
+//   - Netlify → Environment    → VITE_API_URL (production) then Redeploy
+// Example: VITE_API_URL=https://your-api.onrender.com/api/v1
+// axios.js reads import.meta.env.VITE_API_URL
+// =============================================================================
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -47,9 +56,12 @@ export default defineConfig({
       },
 
       workbox: {
-        // Cache built JS/CSS/HTML and public assets for offline shell.
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        // API calls still go to the network — ecommerce needs live data for checkout.
+        // Precache app shell only (JS/CSS/HTML/fonts). Large PNGs (hero images)
+        // stay out of the service worker — they load from the network when needed.
+        globPatterns: ["**/*.{js,css,html,ico,svg,woff2}"],
+        globIgnores: ["**/images/**"],
+        // If a file is still too big, skip it instead of failing the whole build.
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         navigateFallback: "/index.html",
         runtimeCaching: [
           {
